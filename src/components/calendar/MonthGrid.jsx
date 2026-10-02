@@ -89,6 +89,9 @@ export default function MonthGrid({
                 {visible.map((ev) => {
                   const interp = interpretersById[ev.interpreter_id]
                   const hex = getColorHex(interp?.color_key)
+                  const scheduleLabel = interp?.name
+                    ? `${ev.title} - ${interp.name}`
+                    : ev.title
                   return (
                     <div
                       key={ev.id}
@@ -99,13 +102,13 @@ export default function MonthGrid({
                       className="flex items-center gap-[3px] px-1 py-[1px] rounded
                         text-[10px] leading-tight cursor-pointer hover:opacity-75 shrink-0"
                       style={{ backgroundColor: hex + '28', color: hex }}
-                      title={`${interp?.name || ''} — ${ev.title}`}
+                      title={scheduleLabel}
                     >
                       <span
                         className="w-[5px] h-[5px] rounded-full shrink-0"
                         style={{ backgroundColor: hex }}
                       />
-                      <span className="truncate">{ev.title}</span>
+                      <span className="truncate">{scheduleLabel}</span>
                     </div>
                   )
                 })}
