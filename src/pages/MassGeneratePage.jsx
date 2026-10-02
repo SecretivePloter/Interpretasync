@@ -153,7 +153,7 @@ export default function MassGeneratePage() {
                         const filePath = `${safeName}_${safeNomor}.${ext}`;
 
                         const { error: storageErr } = await supabase.storage
-                            .from('sertifikat_photos')
+                            .from('ichikara_sertifikat_photos')
                             .upload(filePath, photoFile, { upsert: true });
 
                         if (storageErr) throw storageErr;

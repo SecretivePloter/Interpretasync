@@ -30,5 +30,5 @@ export async function uploadFile(bucket, file, pathPrefix = '') {
 
 // Upload avatar interpreter -> kembalikan URL (disimpan via updateInterpreter).
 export async function uploadAvatar(file) {
-  return uploadFile('avatars', file, 'avatar-')
+  return uploadFile('ichikara_avatars', file, 'avatar-')
 }

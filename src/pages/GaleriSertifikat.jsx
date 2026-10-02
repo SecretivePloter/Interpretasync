@@ -51,7 +51,7 @@ export default function GaleriSertifikat() {
             // 1. Cek apakah PDF fisiknya sudah ada di Storage
             const { data: existData, error: existError } = await supabase
                 .storage
-                .from('sertifikat_arsip')
+                .from('ichikara_sertifikat_arsip')
                 .download(pdfFileName);
 
             if (!existError && existData) {
@@ -65,11 +65,11 @@ export default function GaleriSertifikat() {
 
             // a. Minta foto peserta dari bucket "sertifikat_photos"
             let photoDataUrl = null;
-            const { data: photoList } = await supabase.storage.from('sertifikat_photos').list();
+            const { data: photoList } = await supabase.storage.from('ichikara_sertifikat_photos').list();
             const photoInfo = photoList?.find(f => f.name.startsWith(`${safeName}_${safeNomor}`));
 
             if (photoInfo) {
-                const { data: photoBlob } = await supabase.storage.from('sertifikat_photos').download(photoInfo.name);
+                const { data: photoBlob } = await supabase.storage.from('ichikara_sertifikat_photos').download(photoInfo.name);
                 if (photoBlob) {
                     photoDataUrl = await new Promise(r => {
                         const reader = new FileReader();
@@ -145,7 +145,7 @@ export default function GaleriSertifikat() {
             // Hapus fisik storage (opsional/best-effort)
             const safeName = namaLengkap.replace(/[^\w\s-]/g, '_').trim();
             const pdfFileName = `Sertifikat_${safeName}.pdf`;
-            await supabase.storage.from('sertifikat_arsip').remove([pdfFileName]).catch(() => { });
+            await supabase.storage.from('ichikara_sertifikat_arsip').remove([pdfFileName]).catch(() => { });
 
             setRecords(prev => prev.filter(r => r.nomor !== record.nomor));
         } catch (err) {

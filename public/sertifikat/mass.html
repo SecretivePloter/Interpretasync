@@ -496,7 +496,7 @@
         // Inisialisasi Supabase
         const config = window.ICHIKARA_SUPABASE_CONFIG;
         if (!config?.url || !config?.anonKey) throw new Error('Konfigurasi Supabase sertifikat belum diisi.');
-        const supabase = window.supabase.createClient(config.url, config.anonKey);
+        const supabase = window.supabase.createClient(config.url, config.anonKey, { db: { schema: 'ichikara' } });
 
         async function startMassGeneration() {
             const btn = document.getElementById('btnGenerate');
@@ -575,7 +575,7 @@
                                 log(`    📸 Mengunggah foto ${filePath}...`)
                                 const { error: storageErr } = await supabase
                                     .storage
-                                    .from('sertifikat_photos')
+                                    .from('ichikara_sertifikat_photos')
                                     .upload(filePath, photoFile, { upsert: true })
 
                                 if (storageErr) log(`    ⚠️ Gagal upload foto: ${storageErr.message}`)

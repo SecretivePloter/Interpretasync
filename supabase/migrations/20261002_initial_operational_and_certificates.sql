@@ -274,21 +274,78 @@ grant execute on function public.verify_certificate(text) to anon, authenticated
 -- ─── Storage buckets and policies ──────────────────────────────────────────
 
 insert into storage.buckets (id, name, public) values
-  ('avatars', 'avatars', false),
-  ('sertifikat_photos', 'sertifikat_photos', false),
-  ('sertifikat_arsip', 'sertifikat_arsip', false)
+  ('ichikara_avatars', 'ichikara_avatars', false),
+  ('ichikara_sertifikat_photos', 'ichikara_sertifikat_photos', false),
+  ('ichikara_sertifikat_arsip', 'ichikara_sertifikat_arsip', false)
 on conflict (id) do update set public = excluded.public;
 
 create policy "management manages application storage"
   on storage.objects for all to authenticated
   using (
-    bucket_id in ('avatars', 'sertifikat_photos', 'sertifikat_arsip')
+    bucket_id in ('ichikara_avatars', 'ichikara_sertifikat_photos', 'ichikara_sertifikat_arsip')
     and public.is_management()
   )
   with check (
-    bucket_id in ('avatars', 'sertifikat_photos', 'sertifikat_arsip')
+    bucket_id in ('ichikara_avatars', 'ichikara_sertifikat_photos', 'ichikara_sertifikat_arsip')
     and public.is_management()
   );
 
 -- Realtime is intentionally limited to the operational tables used by Zustand.
 alter publication supabase_realtime add table public.interpreters, public.orders, public.events;
+
+-- ─── Final isolation ───────────────────────────────────────────────────────
+-- Semua tabel dan fungsi aplikasi dipindah ke schema sendiri agar tidak
+-- bercampur dengan tabel atau fungsi yang sudah dimiliki project Supabase ini.
+create schema if not exists ichikara;
+
+alter table public.user_roles set schema ichikara;
+alter table public.interpreters set schema ichikara;
+alter table public.orders set schema ichikara;
+alter table public.events set schema ichikara;
+alter table public.app_settings set schema ichikara;
+alter table public.inventory_items set schema ichikara;
+alter table public.inventory_transactions set schema ichikara;
+alter table public.inventory_maintenance set schema ichikara;
+alter table public.sertifikat set schema ichikara;
+
+alter function public.current_app_role() set schema ichikara;
+alter function public.is_management() set schema ichikara;
+alter function public.has_app_role() set schema ichikara;
+alter function public.increment_stok(uuid, integer) set schema ichikara;
+alter function public.set_updated_at() set schema ichikara;
+alter function public.verify_certificate(text) set schema ichikara;
+
+-- Fungsi perlu dibuat ulang agar body-nya juga menunjuk schema Ichikara.
+create or replace function ichikara.current_app_role()
+returns text language sql stable security definer set search_path = ichikara, public
+as $$ select role from ichikara.user_roles where user_id = auth.uid() $$;
+create or replace function ichikara.is_management()
+returns boolean language sql stable security definer set search_path = ichikara, public
+as $$ select ichikara.current_app_role() = 'manajemen' $$;
+create or replace function ichikara.has_app_role()
+returns boolean language sql stable security definer set search_path = ichikara, public
+as $$ select ichikara.current_app_role() in ('manajemen', 'operator') $$;
+create or replace function ichikara.increment_stok(p_item_id uuid, p_delta integer)
+returns void language plpgsql security invoker set search_path = ichikara, public as $$
+begin
+  update ichikara.inventory_items set stok_saat_ini = stok_saat_ini + p_delta
+  where id = p_item_id and stok_saat_ini + p_delta >= 0;
+  if not found then raise exception 'Stok tidak cukup atau barang tidak ditemukan'; end if;
+end;
+$$;
+create or replace function ichikara.verify_certificate(p_nomor text)
+returns table (nomor text, nama_peserta text, ttl text, level text, lama text, predikat text,
+  n1 numeric, n2 numeric, n3 numeric, n4 numeric, n5 numeric, lulus text,
+  tgl_selesai text, tgl_terbit text, photo_path text)
+language sql stable security definer set search_path = ichikara, public
+as $$
+  select nomor, nama_peserta, ttl, level, lama, predikat, n1, n2, n3, n4, n5,
+    lulus, tgl_selesai, tgl_terbit, photo_path
+  from ichikara.sertifikat where nomor = trim(p_nomor) limit 1
+$$;
+
+-- Publication Realtime menyimpan relasi berdasarkan object ID, sehingga keanggotaan
+-- tiga tabel yang sudah ditambahkan di atas tetap berlaku setelah schema dipindahkan.
+
+-- PostgREST/API harus diizinkan mengekspos schema ini dari Dashboard > Settings > API.
+grant usage on schema ichikara to anon, authenticated;

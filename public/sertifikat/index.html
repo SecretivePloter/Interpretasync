@@ -499,7 +499,7 @@
       if (window.supabase) {
         const config = window.ICHIKARA_SUPABASE_CONFIG;
         if (!config?.url || !config?.anonKey) throw new Error('Konfigurasi Supabase sertifikat belum diisi.');
-        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+        supabaseClient = window.supabase.createClient(config.url, config.anonKey, { db: { schema: 'ichikara' } });
       }
     } catch (e) {
       console.warn("Supabase Arsip gagal diinisialisasi:", e);
@@ -1143,7 +1143,7 @@
         try {
           if (!supabaseClient) throw new Error("Supabase tidak terinisialisasi — cek koneksi dan konfigurasi.");
           const pdfBlob = pdf.output('blob');
-          const { error } = await supabaseClient.storage.from('sertifikat_arsip').upload(fileName, pdfBlob, { upsert: true });
+          const { error } = await supabaseClient.storage.from('ichikara_sertifikat_arsip').upload(fileName, pdfBlob, { upsert: true });
           if (error) throw error;
           toast('PDF berhasil diunduh & diarsipkan!', 'ok');
         } catch (storageErr) {
@@ -1238,7 +1238,7 @@
 
           // Upload to storage so it stays
           if (supabaseClient) {
-            await supabaseClient.storage.from('sertifikat_arsip').upload(fileName, pdfBlob, { upsert: true });
+            await supabaseClient.storage.from('ichikara_sertifikat_arsip').upload(fileName, pdfBlob, { upsert: true });
           }
 
           // Respond back with DataURL of the PDF blob to download it natively!

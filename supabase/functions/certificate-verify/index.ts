@@ -25,14 +25,14 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } },
     )
-    const { data, error } = await admin.rpc("verify_certificate", { p_nomor: nomor.trim() }).maybeSingle()
+    const { data, error } = await admin.schema("ichikara").rpc("verify_certificate", { p_nomor: nomor.trim() }).maybeSingle()
     if (error) throw error
     if (!data) return new Response(JSON.stringify({ certificate: null }), { headers: corsHeaders })
 
     let photoUrl: string | null = null
     if (data.photo_path) {
       const { data: signed, error: signError } = await admin.storage
-        .from("sertifikat_photos")
+        .from("ichikara_sertifikat_photos")
         .createSignedUrl(data.photo_path, 60)
       if (!signError) photoUrl = signed.signedUrl
     }

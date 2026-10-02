@@ -12,6 +12,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  db: { schema: 'ichikara' },
   auth: {
     persistSession: true,
     autoRefreshToken: true,

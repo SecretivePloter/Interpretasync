@@ -12,12 +12,13 @@ Modul keuangan tidak ikut dideploy.
 
 ## 2. Buat schema dan admin pertama
 
-1. Buka **SQL Editor**, jalankan `supabase/migrations/20261002_initial_operational_and_certificates.sql`.
+1. Di **Settings > API**, tambahkan `ichikara` pada **Exposed schemas**. Jangan hapus schema lain yang sedang dipakai project tersebut.
+2. Buka **SQL Editor**, jalankan `supabase/migrations/20261002_initial_operational_and_certificates.sql`.
 2. Buat akun admin pertama dari **Authentication > Users**.
 3. Jalankan query berikut, ganti emailnya:
 
 ```sql
-insert into public.user_roles (user_id, role)
+insert into ichikara.user_roles (user_id, role)
 select id, 'manajemen'
 from auth.users
 where email = 'admin@domain-anda.com'
