@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Token warna per-mode (channel RGB untuk rgb(var(--c) / alpha)) ===== */
+/* :root = LIGHT MODE (default tanpa class). .dark = DARK MODE. */
+:root {
+  color-scheme: light;
+
+  --c-background: 248 249 250; /* #F8F9FA */
+  --c-surface: 248 249 250;
+  --c-surface-dim: 238 240 242; /* #EEF0F2 */
+  --c-surface-bright: 255 255 255;
+  --c-surface-container-lowest: 255 255 255;
+  --c-surface-container-low: 255 255 255; /* card putih */
+  --c-surface-container: 255 255 255;
+  --c-surface-container-high: 241 243 245; /* #F1F3F5 panel terangkat */
+  --c-surface-container-highest: 233 236 239; /* #E9ECEF */
+  --c-surface-variant: 229 231 235; /* #E5E7EB */
+  --c-on-surface: 26 26 46; /* #1A1A2E teks utama */
+  --c-on-background: 26 26 46;
+  --c-on-surface-variant: 107 114 128; /* #6B7280 teks sekunder */
+  --c-outline: 156 163 175; /* #9CA3AF */
+  --c-outline-variant: 229 231 235; /* #E5E7EB border */
+  --c-primary: 37 99 235; /* #2563EB aksen biru terbaca di latar terang */
+  --c-primary-container: 37 99 235;
+  --c-on-primary: 255 255 255;
+  --c-on-primary-container: 255 255 255;
+  --c-secondary: 15 157 126; /* #0F9D7E teal gelap */
+  --c-secondary-container: 15 157 126;
+  --c-on-secondary: 255 255 255;
+  --c-on-secondary-container: 255 255 255;
+  --c-tertiary: 124 92 214; /* #7C5CD6 ungu */
+  --c-error: 220 38 38; /* #DC2626 */
+  --c-on-error: 255 255 255;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --c-background: 17 17 37; /* #111125 */
+  --c-surface: 17 17 37;
+  --c-surface-dim: 17 17 37;
+  --c-surface-bright: 55 55 77; /* #37374d */
+  --c-surface-container-lowest: 12 12 31; /* #0c0c1f */
+  --c-surface-container-low: 26 26 46; /* #1a1a2e */
+  --c-surface-container: 30 30 50; /* #1e1e32 */
+  --c-surface-container-high: 40 40 61; /* #28283d */
+  --c-surface-container-highest: 51 51 72; /* #333348 */
+  --c-surface-variant: 51 51 72; /* #333348 */
+  --c-on-surface: 226 224 252; /* #e2e0fc */
+  --c-on-background: 226 224 252;
+  --c-on-surface-variant: 194 198 213; /* #c2c6d5 */
+  --c-outline: 140 144 158; /* #8c909e */
+  --c-outline-variant: 66 71 83; /* #424753 */
+  --c-primary: 172 199 255; /* #acc7ff */
+  --c-primary-container: 80 143 248; /* #508ff8 */
+  --c-on-primary: 0 47 104; /* #002f68 */
+  --c-on-primary-container: 0 40 91; /* #00285b */
+  --c-secondary: 78 221 187; /* #4eddbb */
+  --c-secondary-container: 0 181 150; /* #00b596 */
+  --c-on-secondary: 0 56 44; /* #00382c */
+  --c-on-secondary-container: 0 63 51; /* #003f33 */
+  --c-tertiary: 207 189 255; /* #cfbdff */
+  --c-error: 255 180 171; /* #ffb4ab */
+  --c-on-error: 105 0 5; /* #690005 */
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-background font-sans antialiased;
+    font-size: 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+@layer utilities {
+  /* Skeleton shimmer */
+  .skeleton {
+    @apply relative overflow-hidden bg-surface-container-high rounded;
+  }
+  .skeleton::after {
+    @apply absolute inset-0;
+    content: '';
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+    animation: shimmer 1.4s infinite;
+  }
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* Scrollbar mengikuti tema (channel RGB dari variabel token). */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--c-surface));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-surface-container-highest));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--c-outline-variant));
+}
+
+/* Hilangkan panah default input number */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Quotation Generator – PT Ichikara</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-brand">PT Ichikara</div>
+      <div class="sb-sub">Quotation Generator</div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab active" data-tab="0">Info</button>
+      <button class="tab" data-tab="1">Client</button>
+      <button class="tab" data-tab="2">Layanan</button>
+      <button class="tab" data-tab="3">Jadwal</button>
+      <button class="tab" data-tab="4">Harga</button>
+      <button class="tab" data-tab="5">Lainnya</button>
+    </div>
+
+    <!-- ── TAB 0: Info Quotation ── -->
+    <div class="pane active" id="pane-0">
+      <h4>Info Quotation</h4>
+      <label>Nomor Quotation <span class="r">*</span></label>
+      <input id="q_no" type="text" placeholder="Q.099.FIBM.INT.9.VI.2026"/>
+
+      <label>Tanggal <span class="r">*</span>
+        <span class="hint">→ Auto-format JP &amp; ID</span></label>
+      <input id="q_date" type="date"/>
+
+      <label>Kota</label>
+      <input id="q_city" type="text" value="Cikarang"/>
+    </div>
+
+    <!-- ── TAB 1: Client ── -->
+    <div class="pane" id="pane-1">
+      <h4>Data Client</h4>
+      <label>Nama Singkat Client <span class="r">*</span>
+        <span class="hint">(untuk baris 御中)</span></label>
+      <input id="cl_short" type="text" placeholder="Furukawa Indomobil Battery Manufacturing"/>
+
+      <label>Nama PT Lengkap <span class="r">*</span></label>
+      <input id="cl_pt" type="text" placeholder="PT. Furukawa Indomobil Battery Manufacturing"/>
+
+      <label>Kode Client <span class="hint">(untuk header tabel layanan)</span></label>
+      <input id="cl_code" type="text" placeholder="FIBM" style="width:120px"/>
+
+      <label>Attn / Nama PIC</label>
+      <input id="cl_attn" type="text" placeholder="Ibu Indira Kinanthi"/>
+
+      <label>Nama Client untuk blok TTD kanan</label>
+      <input id="cl_ttd" type="text" placeholder="PT. Furukawa Indomobil Battery Manufacturing"/>
+    </div>
+
+    <!-- ── TAB 2: Layanan ── -->
+    <div class="pane" id="pane-2">
+      <h4>Detail Layanan</h4>
+      <label>Tipe Layanan</label>
+      <div class="row2">
+        <div>
+          <span class="mini-lbl">Jepang</span>
+          <input id="svc_jp" type="text" value="通訳"/>
+        </div>
+        <div>
+          <span class="mini-lbl">Indonesia</span>
+          <input id="svc_id" type="text" value="Interpreter"/>
+        </div>
+      </div>
+
+      <label>Nama PIC Client (di tabel)</label>
+      <input id="svc_pic" type="text" placeholder="Ibu Indira Kinanthi"/>
+
+      <label>Aktivitas / Kegiatan</label>
+      <input id="svc_activity" type="text" placeholder="Quality Audit"/>
+
+      <label>Nama Interpreter</label>
+      <input id="svc_interp" type="text" placeholder="Bp. Arief S."/>
+
+      <label>Periode</label>
+      <input id="svc_periode" type="text" placeholder="22 Juni 2026"/>
+    </div>
+
+    <!-- ── TAB 3: Jadwal ── -->
+    <div class="pane" id="pane-3">
+      <h4>Jadwal Kerja</h4>
+      <div class="row2">
+        <div>
+          <label>Bulan</label>
+          <select id="sch_month">
+            <option value="1">Januari</option><option value="2">Februari</option>
+            <option value="3">Maret</option><option value="4">April</option>
+            <option value="5">Mei</option><option value="6" selected>Juni</option>
+            <option value="7">Juli</option><option value="8">Agustus</option>
+            <option value="9">September</option><option value="10">Oktober</option>
+            <option value="11">November</option><option value="12">Desember</option>
+          </select>
+        </div>
+        <div>
+          <label>Tahun</label>
+          <input id="sch_year" type="number" value="2026" min="2020" max="2040"/>
+        </div>
+      </div>
+
+      <label>Tempat / Lokasi</label>
+      <input id="sch_tempat" type="text" placeholder="PT. Furukawa Indomobil - Purwakarta"/>
+
+      <div class="add-day-box">
+        <div class="add-day-title">+ Tambah Hari Kerja</div>
+        <div class="add-day-row">
+          <div>
+            <span class="mini-lbl">Tgl</span>
+            <input id="ad_date" type="number" min="1" max="31" placeholder="22" style="width:50px"/>
+          </div>
+          <div>
+            <span class="mini-lbl">Bulan</span>
+            <select id="ad_month" style="width:80px">
+              <option value="1">Jan</option><option value="2">Feb</option>
+              <option value="3">Mar</option><option value="4">Apr</option>
+              <option value="5">Mei</option><option value="6">Jun</option>
+              <option value="7">Jul</option><option value="8">Agu</option>
+              <option value="9">Sep</option><option value="10">Okt</option>
+              <option value="11">Nov</option><option value="12">Des</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <span class="mini-lbl">Tipe</span>
+            <select id="ad_type" style="width:100%">
+              <option value="special">特別料金 / Special</option>
+              <option value="standard" selected>標準料金 / Hari Kerja Biasa</option>
+              <option value="halfday">半日 / Half Day</option>
+              <option value="overtime">残業 / Overtime</option>
+            </select>
+          </div>
+        </div>
+        <div class="add-day-row" style="margin-top:4px">
+          <div style="flex:1">
+            <span class="mini-lbl">Label JP (opsional, kosongkan = default)</span>
+            <input id="ad_jp" type="text" placeholder="例: 特別料金8時間"/>
+          </div>
+        </div>
+        <div class="add-day-row" style="margin-top:4px">
+          <div style="flex:1">
+            <span class="mini-lbl">Keterangan / Activity</span>
+            <input id="ad_act" type="text" placeholder="misal: Quality Audit"/>
+          </div>
+        </div>
+        <button class="btn-add-day" onclick="addDay()">Tambah</button>
+      </div>
+
+      <div id="day-list"></div>
+    </div>
+
+    <!-- ── TAB 4: Harga ── -->
+    <div class="pane" id="pane-4">
+      <h4>Item Harga</h4>
+      <p class="note-box">Centang item yang digunakan. Harga &amp; qty bisa diedit. PPH 23 (2%) dihitung otomatis.</p>
+      <div id="preset-container"></div>
+      <div class="price-total-bar" style="margin-top:10px">
+        Total: <strong id="sb-total">Rp 0</strong>
+      </div>
+    </div>
+
+    <!-- ── TAB 5: Lainnya ── -->
+    <div class="pane" id="pane-5">
+      <h4>Pengaturan Lainnya</h4>
+      <label>Jangka Pembayaran</label>
+      <input id="oth_payment" type="text" value="1 minggu" placeholder="1 minggu / 3 hari / 2 weeks"/>
+
+      <hr style="margin:16px 0"/>
+      <label>Logo Perusahaan <span class="hint">(PNG)</span></label>
+      <input type="file" id="upload_logo" accept="image/*" onchange="uploadImg('logo')"/>
+      <p class="note-box" style="margin-top:8px">Stempel &amp; TTD Risma N. otomatis tampil dari file <code>ttd.png</code>.</p>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-footer-row">
+        <button class="btn-sec" onclick="resetAll()">↺ Reset</button>
+        <button class="btn-sec" onclick="loadSample()">▶ Contoh FIBM</button>
+      </div>
+      <div class="sb-footer-row">
+        <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+        <button class="btn-xl"  onclick="exportExcel()">📊 Export Excel</button>
+      </div>
+      <button class="btn-pri" onclick="window.print()">🖨 Print / Cetak</button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ PREVIEW ═══════════════ -->
+  <main class="preview">
+    <div class="prev-toolbar">
+      <span>Preview Quotation</span>
+    </div>
+    <div class="prev-scroll">
+      <div class="prev-page" id="quotation">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </main>
+
+</div><!-- /shell -->
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+/* ============================================================
+   ICHIKARA QUOTATION GENERATOR — CSS
+   Exact match to Q.099.FIBM template (Arial 7.3pt / TNR 12pt)
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:   #1a56a0;
+  --blue2:  #0e3570;
+  --blue-lt:#e8f0fb;
+  --red:    #c00;
+  --gray1:  #f8f9fa;
+  --gray2:  #e9ecef;
+  --gray3:  #ced4da;
+  --gray5:  #6c757d;
+  --gray9:  #212529;
+  --r:      6px;
+  --sbw:    350px;
+}
+
+html, body { height:100%; font-family:'Segoe UI',system-ui,sans-serif; background:#dde3ea; }
+
+/* ── SHELL ── */
+.shell { display:flex; height:100vh; overflow:hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:var(--sbw); min-width:var(--sbw);
+  background:#fff; border-right:1px solid var(--gray2);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+
+.sb-header {
+  background:var(--blue); color:#fff;
+  padding:14px 18px 12px;
+}
+.sb-brand { font-size:15px; font-weight:700; }
+.sb-sub   { font-size:11px; opacity:.75; margin-top:1px; }
+
+.tab-bar { display:flex; background:var(--gray1); border-bottom:2px solid var(--gray2); }
+.tab {
+  flex:1; padding:8px 2px; border:none; background:transparent;
+  font-size:10px; font-weight:600; color:var(--gray5); cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-2px;
+  transition:color .12s,border-color .12s;
+}
+.tab:hover  { color:var(--blue); }
+.tab.active { color:var(--blue); border-bottom-color:var(--blue); background:#fff; }
+
+.pane { display:none; padding:16px 18px; overflow-y:auto; flex:1; }
+.pane.active { display:block; }
+
+.pane h4 { font-size:12px; font-weight:700; color:var(--blue); margin-bottom:12px; }
+
+label {
+  display:block; font-size:11px; font-weight:600;
+  color:var(--gray5); margin-top:10px; margin-bottom:3px;
+}
+label:first-child { margin-top:0; }
+.r { color:#c00; }
+.hint { font-weight:400; color:#aaa; font-size:10px; margin-left:4px; }
+
+input[type=text], input[type=number], input[type=date], input[type=file],
+select, textarea {
+  width:100%; padding:7px 9px; border:1px solid var(--gray3);
+  border-radius:var(--r); font-size:12px; font-family:inherit;
+  color:var(--gray9); background:#fff;
+  transition:border-color .12s, box-shadow .12s;
+}
+input:focus, select:focus { outline:none; border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(26,86,160,.12); }
+
+.row2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; }
+.row2 > div { display:flex; flex-direction:column; }
+.mini-lbl { font-size:10px; color:var(--gray5); font-weight:600; margin-bottom:2px; }
+
+.note-box { font-size:10px; background:var(--blue-lt); padding:7px 9px;
+  border-radius:var(--r); color:var(--gray9); margin-bottom:10px; }
+
+/* day/price add boxes */
+.add-day-box, .price-add-box {
+  background:var(--gray1); border:1px solid var(--gray2);
+  border-radius:var(--r); padding:10px 12px; margin-top:10px;
+}
+.add-day-title { font-size:11px; font-weight:700; color:var(--blue2); margin-bottom:8px; }
+.add-day-row { display:flex; gap:8px; align-items:flex-end; }
+.add-day-row > div { display:flex; flex-direction:column; }
+.btn-add-day {
+  margin-top:8px; width:100%; padding:7px; border:none;
+  border-radius:var(--r); background:var(--blue); color:#fff;
+  font-size:12px; font-weight:600; cursor:pointer; transition:background .12s;
+}
+.btn-add-day:hover { background:var(--blue2); }
+
+/* day list items */
+#day-list, #price-list { margin-top:8px; display:flex; flex-direction:column; gap:5px; }
+.day-item, .price-item {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  padding:7px 10px; background:#fff; border:1px solid var(--gray2);
+  border-radius:var(--r); border-left:3px solid var(--blue);
+  font-size:11px;
+}
+.day-item .di-main { flex:1; }
+.day-item .di-date { font-weight:700; font-size:12px; }
+.day-item .di-meta { color:var(--gray5); font-size:10px; }
+.price-item .pi-main { flex:1; }
+.price-item .pi-name { font-weight:700; }
+.price-item .pi-sub  { color:var(--gray5); font-size:10px; margin-top:1px; }
+.btn-del {
+  background:none; border:none; color:#c00; font-size:14px;
+  cursor:pointer; padding:0 2px; line-height:1; margin-left:6px;
+}
+.btn-del:hover { opacity:.6; }
+
+.price-total-bar {
+  margin-top:10px; padding:9px 12px;
+  background:var(--blue); color:#fff; border-radius:var(--r);
+  font-size:12px; font-weight:600; text-align:right;
+}
+
+/* ── PRESET PRICE ITEMS ── */
+.preset-row {
+  border:1px solid var(--gray2); border-radius:var(--r);
+  margin-bottom:6px; overflow:hidden;
+}
+.preset-label {
+  display:flex; align-items:flex-start; gap:8px;
+  padding:8px 10px; cursor:pointer; background:var(--gray1);
+  user-select:none;
+}
+.preset-label input[type=checkbox] {
+  width:16px; height:16px; min-width:16px; margin-top:2px; cursor:pointer;
+}
+.preset-label:hover { background:var(--blue-lt); }
+.pl-jp { font-size:11px; font-weight:700; color:var(--gray9); display:block; }
+.pl-id { font-size:10px; color:var(--gray5); display:block; }
+.preset-fields {
+  padding:8px 10px; background:#fff;
+  border-top:1px solid var(--gray2);
+}
+.pf-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:6px; margin-bottom:5px;
+}
+.pf-grid:last-child { margin-bottom:0; }
+.pf-grid > div { display:flex; flex-direction:column; }
+.pf-grid > div input { padding:5px 7px; font-size:11px; }
+.price-total-bar strong { font-size:14px; margin-left:6px; }
+
+.sb-footer {
+  padding:12px 18px; border-top:1px solid var(--gray2);
+  background:var(--gray1); display:flex; flex-direction:column; gap:7px;
+}
+.sb-footer-row { display:flex; gap:7px; }
+.btn-pri, .btn-sec, .btn-xl {
+  padding:8px 10px; border:none; border-radius:var(--r);
+  font-size:12px; font-weight:600; cursor:pointer; transition:background .12s;
+  flex:1;
+}
+.btn-pri { background:var(--blue); color:#fff; }
+.btn-pri:hover { background:var(--blue2); }
+.btn-sec { background:var(--gray2); color:var(--gray9); }
+.btn-sec:hover { background:var(--gray3); }
+.btn-xl  { background:#1d7044; color:#fff; }
+.btn-xl:hover  { background:#155432; }
+.btn-pdf { background:#c0392b; color:#fff; }
+.btn-pdf:hover { background:#96281b; }
+
+/* ── PREVIEW ── */
+.preview { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.prev-toolbar {
+  padding:10px 20px; background:#fff;
+  border-bottom:1px solid var(--gray2); font-size:13px; font-weight:600;
+  color:var(--gray9);
+}
+.prev-scroll { flex:1; overflow-y:auto; padding:24px; background:#dde3ea; }
+
+/* ── QUOTATION DOCUMENT ── */
+/* A4 = 210mm × 297mm, displayed at fixed mm so print is exact */
+.prev-page {
+  width:210mm; min-height:297mm;
+  background:#fff;
+  margin:0 auto;
+  box-shadow:0 4px 24px rgba(0,0,0,.18);
+
+  /* Layout is handled INSIDE; no padding here to keep print clean */
+}
+
+/* The actual printable content with exact margins matching the PDF */
+.q-doc {
+  width:210mm; min-height:297mm;
+  padding:8mm 16.6mm 8mm 16.6mm;
+  font-family:'Arial', 'MS PGothic', sans-serif;
+  font-size:7.3pt;
+  line-height:1.35;
+  color:#000;
+}
+
+/* Japanese text spans */
+.jp { font-family:'MS Gothic','MS PGothic','Yu Gothic','Meiryo','Noto Sans JP',sans-serif; }
+
+/* ── HEADER (top of quotation) ── */
+.q-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:2mm;
+}
+.q-logo-block { width:55%; }
+.q-logo-block img { max-height:27mm; max-width:90%; }
+.q-logo-block .logo-fallback {
+  font-family:'Times New Roman',serif; font-size:18pt; font-weight:700;
+  color:#1a56a0;
+}
+.q-company-block {
+  width:44%; text-align:center;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+.q-company-block .co-name {
+  font-family:'Times New Roman',serif; font-size:12pt; font-weight:700;
+  margin-bottom:0.5mm;
+}
+.q-company-block .co-addr {
+  font-family:'Times New Roman',serif; font-size:10.7pt; line-height:1.4;
+  text-align:center;
+}
+
+/* Horizontal rule under header */
+.q-hrule {
+  border:none; border-top:3pt solid #000;
+  margin:1.5mm 0;
+}
+
+/* ── META ROW (Kepada + No/Date) ── */
+.q-meta {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:1mm;
+}
+.q-to { flex:1; }
+.q-to-label  { font-size:7.3pt; }
+.q-to-client { font-size:7.3pt; font-weight:normal; }
+.q-to-attn   { font-size:7.3pt; }
+.q-no-block  { text-align:right; min-width:95mm; }
+.q-no-block .qno  { font-size:7.3pt; }
+.q-no-block .qdate{ font-size:7.3pt; }
+
+/* ── TITLE ── */
+.q-title {
+  text-align:center; margin:1.5mm 0 1mm;
+}
+.q-title .t-jp {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic','Meiryo',sans-serif;
+  font-size:8pt; display:block;
+}
+.q-title .t-id {
+  font-family:'Arial',sans-serif; font-size:7.3pt; font-weight:700;
+  letter-spacing:2pt; display:block;
+}
+
+/* ── GREETING ── */
+.q-greeting { margin-bottom:1.5mm; font-size:7.3pt; }
+.q-greeting .gr-jp { font-family:'MS Gothic','MS PGothic','Yu Gothic','Meiryo',sans-serif; }
+.q-greeting .gr-id { margin-top:0.5mm; }
+
+/* ── SECTION LABEL (サービス/Layanan etc.) ── */
+.q-section {
+  margin-top:2mm; margin-bottom:0.5mm;
+}
+.q-sec-jp {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic','Meiryo',sans-serif;
+  font-size:7.3pt;
+}
+.q-sec-id { font-size:7.3pt; }
+
+/* ── MAIN BOX (Layanan + Jadwal + Price dalam satu kotak) ── */
+.q-main {
+  width:100%; border-collapse:collapse;
+  font-size:7.3pt; margin:1mm 0 1.5mm;
+}
+.q-main > tbody > tr > td {
+  border:1pt solid #000;
+  vertical-align:top;
+}
+.q-main td.outer-lbl {
+  width:20mm; padding:1.5mm 1mm 1mm 1.5mm;
+  font-size:7.3pt; text-align:left; vertical-align:top;
+}
+.q-main td.outer-cell { padding:1.5mm; }
+.q-main td.outer-cell > table { margin:0 auto; }
+
+/* ── SERVICE TABLE ── */
+.q-svc-table {
+  width:100%; border-collapse:collapse;
+  font-size:7.3pt; margin-bottom:1mm;
+}
+.q-svc-table th, .q-svc-table td {
+  border:0.5pt solid #888;
+  padding:1mm 1.5mm; vertical-align:middle;
+}
+.q-svc-table .th-jp {
+  background:#fff; color:#000;
+  font-family:'MS PGothic','MS Gothic','Yu Gothic',sans-serif;
+  font-size:7.7pt; font-weight:700;
+  text-align:center;
+}
+.q-svc-table .th-id {
+  background:#fff; color:#000;
+  font-family:'MS PGothic','MS Gothic','Yu Gothic',sans-serif;
+  font-size:7.7pt; font-weight:normal;
+  text-align:center;
+}
+.q-svc-table .cell-lbl {
+  background:#fff;
+  font-family:'MS PGothic','MS Gothic','Yu Gothic',sans-serif;
+  font-size:7.7pt; text-align:center; vertical-align:middle;
+}
+.q-svc-table td {
+  font-family:'MS PGothic','MS Gothic','Yu Gothic',sans-serif;
+  font-size:7.7pt; text-align:center; vertical-align:middle;
+}
+
+/* ── SCHEDULE TABLE (kalender) ── */
+.q-sch-wrap { margin-bottom:0; }
+.q-sch-table {
+  width:100%;
+  border-collapse:collapse; font-size:7.5pt;
+  table-layout:fixed;
+  font-family:'Arial',sans-serif;
+}
+.q-sch-table th, .q-sch-table td {
+  border:0.5pt solid #888;
+  padding:0.6mm 0.3mm; text-align:center; vertical-align:middle;
+  overflow:hidden;
+}
+.q-sch-table .lbl-col { text-align:left; padding-left:1mm; font-size:7pt; }
+.q-sch-table .cal-month { font-weight:700; }
+.q-sch-table .hdr-row th { background:#fff; color:#000; font-weight:700; }
+.q-sch-table .sub-row td { background:#fff; }
+.q-sch-table .total-col { background:#fff; font-weight:700; }
+.q-sch-table .data-jp {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic',sans-serif; font-size:7pt;
+}
+.q-sch-table .wkend     { background:#d9d9d9; }
+.q-sch-table .wkend-txt { color:#c00; }
+.q-sch-table .cal-sel   { font-size:9pt; font-weight:700; line-height:1; }
+.q-sch-table .cal-dayid { font-size:5.5pt; color:#444; }
+.q-sch-table .tempat-row td {
+  text-align:left; background:#fff;
+  font-size:7.3pt; padding:1mm 1.5mm;
+}
+
+/* ── PRICE TABLE ── */
+.q-price-table {
+  width:100%; border-collapse:collapse; font-size:6.5pt;
+  margin-bottom:1mm;
+}
+.q-price-table th, .q-price-table td {
+  border:0.5pt solid #888;
+  padding:0.8mm 1.2mm; vertical-align:middle;
+}
+.q-price-table .ph-jp {
+  background:#fff; color:#000;
+  font-family:'MS Gothic','MS PGothic','Yu Gothic',sans-serif;
+  font-size:6.5pt; font-weight:700; text-align:center;
+}
+.q-price-table .ph-id {
+  background:#fff; color:#000;
+  font-size:6.5pt; font-weight:normal; text-align:center;
+}
+.q-price-table td.desc-cell { font-size:6.5pt; }
+.q-price-table td.desc-cell .dj {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic',sans-serif; font-size:6.5pt;
+}
+.q-price-table td.desc-cell .di { font-size:6.5pt; }
+.q-price-table td.num-cell { text-align:right; font-size:6.5pt; }
+.q-price-table td.keb-cell { text-align:center; font-size:6.5pt; }
+.q-price-table tfoot td {
+  background:#fff; font-weight:700; font-size:6.5pt;
+}
+.q-price-table tfoot td.total-val { text-align:right; font-size:7pt; }
+.q-price-table .col-desc { width:42%; }
+.q-price-table .col-harga{ width:21%; }
+.q-price-table .col-keb  { width:22%; }
+.q-price-table .col-total{ width:15%; }
+
+/* ── NOTES ── */
+.q-notes { font-size:7.3pt; margin-bottom:1.5mm; }
+.q-notes .nb-label { font-weight:normal; }
+.q-notes ul { list-style:none; margin-left:5mm; }
+.q-notes ul li { margin-bottom:0.5mm; }
+.q-notes ul li::before { content:'● '; }
+.q-notes .nj {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic',sans-serif; font-size:7.3pt;
+}
+.q-notes .ni { font-size:7.3pt; }
+
+/* ── CLOSING ── */
+.q-closing { font-size:7.3pt; margin-bottom:2mm; }
+.q-closing .cj {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic',sans-serif;
+}
+
+/* ── SIGNATURES ── */
+.q-sigs { display:flex; justify-content:space-between; align-items:flex-start;
+  margin-top:3mm; }
+.q-sig { width:46%; font-size:7.3pt; }
+.q-sig .sg-label {
+  font-family:'MS Gothic','MS PGothic','Yu Gothic',sans-serif; font-size:7.3pt;
+}
+.q-sig .sg-id   { font-size:7.3pt; }
+.q-sig .sg-co   { font-size:7.3pt; font-weight:normal; }
+.q-sig .sg-img  { margin-top:1mm; margin-bottom:1mm; }
+.q-sig .sg-img img { height:20mm; max-width:100%; }
+.q-sig .sg-name { font-size:7.3pt; }
+.q-sig .sg-line {
+  border-bottom:0.5pt solid #000; margin:12mm 0 1mm;
+  width:60mm;
+}
+
+/* ── PRINT ── */
+@media print {
+  @page { size:A4; margin:0; }
+
+  html, body { background:#fff !important; }
+
+  .shell { display:block; height:auto; }
+  .sidebar, .prev-toolbar { display:none !important; }
+  .preview { display:block; overflow:visible; }
+  .prev-scroll { padding:0; background:none; overflow:visible; }
+
+  .prev-page {
+    width:210mm !important; min-height:297mm;
+    box-shadow:none !important; margin:0 auto;
+  }
+
+  .q-doc { padding:8mm 16.6mm 8mm 16.6mm; }
+
+  /* Force table borders to print */
+  .q-svc-table th, .q-svc-table td,
+  .q-sch-table th, .q-sch-table td,
+  .q-price-table th, .q-price-table td {
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  /* Prevent page break in the middle of the document */
+  .q-doc { page-break-inside:avoid; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px) {
+  .shell { flex-direction:column; }
+  .sidebar { width:100%; min-width:unset; max-height:50vh; }
+  .preview { min-height:50vh; }
+  .prev-page { width:100%; }
+}

@@ -1,0 +1,6 @@
+// Salin file ini menjadi config.js lalu isi dari Settings > API project Supabase BARU.
+// Anon key boleh berada di browser. Jangan pernah taruh service_role key di file ini.
+window.ICHIKARA_SUPABASE_CONFIG = {
+  url: 'https://your-project-ref.supabase.co',
+  anonKey: 'sb_publishable_xxxxxxxxxxxxxxxxxxxx',
+}

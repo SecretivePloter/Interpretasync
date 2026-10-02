@@ -1,0 +1,19 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+public/sertifikat/config.js
+public/sertifikat/_backup*/
+public/sertifikat/_build/
+*.zip
+# Modul keuangan lama tidak menjadi bagian deployment Supabase baru.
+src/pages/finance/
+src/components/finance/
+src/services/financeService.js
+src/services/supabaseFinance.js
+src/components/chat/AiChatbot.jsx
+supabase/functions/ai-chat/
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
