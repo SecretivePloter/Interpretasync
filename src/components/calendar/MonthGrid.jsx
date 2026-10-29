@@ -4,8 +4,7 @@ import { useMemo } from 'react'
 import { getMonthGrid, isSameDay, isSameMonth, toISODate } from '../../utils/dateHelpers'
 import { getColorHex } from '../../utils/colors'
 import { DAY_LABELS } from '../../utils/constants'
-
-const MAX_CHIPS = 3
+import Avatar from '../ui/Avatar'
 
 export default function MonthGrid({
   currentDate,
@@ -28,9 +27,10 @@ export default function MonthGrid({
   }, [events])
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-background">
+    <div className="flex-1 min-h-0 overflow-auto bg-background">
+      <div className="min-w-[760px]">
       {/* Header nama hari */}
-      <div className="grid grid-cols-7 border-b border-outline-variant/20 shrink-0 bg-background/95 backdrop-blur-md">
+      <div className="sticky top-0 z-20 grid grid-cols-7 border-b border-outline-variant/20 shrink-0 bg-background/95 backdrop-blur-md">
         {DAY_LABELS.map((label, i) => (
           <div
             key={i}
@@ -43,13 +43,13 @@ export default function MonthGrid({
         ))}
       </div>
 
-      {/* Grid sel — 6 baris setinggi sama membagi sisa viewport */}
+      {/* Grid visual-management: setiap event tetap tampak, tanpa ringkasan
+          tersembunyi. Baris bertambah tinggi saat hari tersebut padat. */}
       <div
-        className="flex-1 overflow-hidden"
+        className="grid"
         style={{
-          display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gridTemplateRows: 'repeat(6, minmax(0, 1fr))',
+          gridTemplateRows: 'repeat(6, minmax(132px, auto))',
         }}
       >
         {days.map((day, idx) => {
@@ -57,8 +57,6 @@ export default function MonthGrid({
           const isToday = isSameDay(day, now)
           const inMonth = isSameMonth(day, currentDate)
           const dayEvents = eventsByDate[iso] || []
-          const visible = dayEvents.slice(0, MAX_CHIPS)
-          const overflow = dayEvents.length - MAX_CHIPS
           const isSun = idx % 7 === 0
 
           return (
@@ -66,7 +64,7 @@ export default function MonthGrid({
               key={idx}
               onClick={() => onDayClick(day)}
               className={`border-b border-r border-outline-variant/10 p-1 cursor-pointer
-                hover:bg-on-surface/[0.02] transition-colors overflow-hidden flex flex-col
+                hover:bg-on-surface/[0.02] transition-colors flex flex-col
                 ${isToday ? 'bg-primary/5' : ''}
                 ${!inMonth ? 'opacity-35' : ''}`}
             >
@@ -86,7 +84,7 @@ export default function MonthGrid({
 
               {/* Chip event */}
               <div className="flex flex-col gap-[2px] min-h-0 overflow-hidden">
-                {visible.map((ev) => {
+                {dayEvents.map((ev) => {
                   const interp = interpretersById[ev.interpreter_id]
                   const hex = getColorHex(interp?.color_key)
                   const scheduleLabel = interp?.name
@@ -104,23 +102,29 @@ export default function MonthGrid({
                       style={{ backgroundColor: hex + '28', color: hex }}
                       title={scheduleLabel}
                     >
-                      <span
-                        className="w-[5px] h-[5px] rounded-full shrink-0"
-                        style={{ backgroundColor: hex }}
-                      />
-                      <span className="truncate">{scheduleLabel}</span>
+                      {interp?.name ? (
+                        <Avatar
+                          name={interp.name}
+                          colorKey={interp.color_key}
+                          avatarUrl={interp.avatar_url}
+                          size="xs"
+                          className="!w-[14px] !h-[14px] !text-[6px]"
+                        />
+                      ) : (
+                        <span
+                          className="w-[5px] h-[5px] rounded-full shrink-0"
+                          style={{ backgroundColor: hex }}
+                        />
+                      )}
+                      <span className="truncate min-w-0">{scheduleLabel}</span>
                     </div>
                   )
                 })}
-                {overflow > 0 && (
-                  <div className="text-[9px] text-on-surface-variant opacity-60 pl-1 shrink-0">
-                    +{overflow} lagi
-                  </div>
-                )}
               </div>
             </div>
           )
         })}
+      </div>
       </div>
     </div>
   )

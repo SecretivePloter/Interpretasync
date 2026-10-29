@@ -3,6 +3,7 @@
 import { getColorHex, withAlpha } from '../../utils/colors'
 import { trimTime, isAllDayEvent } from '../../utils/dateHelpers'
 import { MapPin, Clock, StickyNote, Building2, Sun } from 'lucide-react'
+import Avatar from '../ui/Avatar'
 
 export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60 }) {
   const hex = getColorHex(interpreter?.color_key)
@@ -28,11 +29,17 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         onClick?.(event)
       }}
     >
-      <div
-        className="font-label-tag text-label-tag line-clamp-1"
-        style={{ color: hex }}
-      >
-        {interpreter?.name || '—'}
+      <div className="flex min-w-0 items-center gap-1 font-label-tag text-label-tag" style={{ color: hex }}>
+        {interpreter?.name && (
+          <Avatar
+            name={interpreter.name}
+            colorKey={interpreter.color_key}
+            avatarUrl={interpreter.avatar_url}
+            size="xs"
+            className="!w-[14px] !h-[14px] !text-[6px]"
+          />
+        )}
+        <span className="truncate min-w-0">{interpreter?.name || '—'}</span>
       </div>
       <div className="font-caption text-caption text-on-surface line-clamp-1 leading-tight">
         {event.title}

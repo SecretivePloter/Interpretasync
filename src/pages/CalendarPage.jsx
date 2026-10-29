@@ -41,6 +41,27 @@ export default function CalendarPage() {
 
   const filteredEvents = useFilteredEvents(events)
 
+  // Tampilkan filter hanya untuk interpreter yang memiliki jadwal dalam
+  // rentang kalender yang sedang dilihat.
+  const scheduledInterpreters = useMemo(() => {
+    const visibleDates = new Set(
+      view === 'month' ? [] : weekDays.map((day) => toISODate(day)),
+    )
+    const monthPrefix = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`
+    const scheduledIds = new Set(
+      events
+        .filter((event) =>
+          view === 'month'
+            ? event.date?.startsWith(monthPrefix)
+            : visibleDates.has(event.date),
+        )
+        .map((event) => event.interpreter_id)
+        .filter(Boolean),
+    )
+
+    return interpreters.filter((interpreter) => scheduledIds.has(interpreter.id))
+  }, [current, events, interpreters, view, weekDays])
+
   // Peta interpreter by id untuk lookup cepat di grid.
   const interpretersById = useMemo(
     () => Object.fromEntries(interpreters.map((i) => [i.id, i])),
@@ -142,7 +163,7 @@ export default function CalendarPage() {
         </div>
       </PageHeader>
 
-      <FilterBar interpreters={interpreters} />
+      <FilterBar interpreters={scheduledInterpreters} />
 
       {/* Loading awal -> skeleton */}
       {!eventsLoaded && eventsLoading ? (
