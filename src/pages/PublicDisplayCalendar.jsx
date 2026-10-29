@@ -48,7 +48,7 @@ export default function PublicDisplayCalendar() {
     return () => window.clearInterval(timer)
   }, [])
 
-  return <>
+  return <main className="h-screen w-screen flex flex-col overflow-hidden bg-background text-on-background">
     <PageHeader title="Kalender" subtitle={formatMonthYear(current)}>
       <div className="flex rounded-lg overflow-hidden border border-outline-variant/30 shrink-0">
         <button onClick={() => {}} className="px-xs lg:px-md py-[5px] text-[10px] lg:text-caption transition-colors text-on-surface-variant hover:bg-on-surface/5"><span className="lg:hidden">Mgg</span><span className="hidden lg:inline">Mingguan</span></button>
@@ -64,5 +64,5 @@ export default function PublicDisplayCalendar() {
     {loading ? <div className="flex-1 p-xl flex flex-col gap-md">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
       : error ? <div className="grid flex-1 place-items-center text-on-surface-variant">{error}</div>
         : <MonthGrid currentDate={current} events={shownEvents} interpretersById={interpretersById} onDayClick={() => {}} onEventClick={() => {}} />}
-  </>
+  </main>
 }
