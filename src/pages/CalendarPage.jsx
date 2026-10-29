@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import PageHeader from '../components/layout/PageHeader'
-import FilterBar from '../components/filter/FilterBar'
+import TodayDutyHighlights from '../components/calendar/TodayDutyHighlights'
 import CalendarGrid from '../components/calendar/CalendarGrid'
 import MonthGrid from '../components/calendar/MonthGrid'
 import EventModal from '../components/calendar/EventModal'
@@ -14,7 +14,7 @@ import { useInterpreterStore } from '../app/store/useInterpreterStore'
 import { useEventStore } from '../app/store/useEventStore'
 import { useOrderStore } from '../app/store/useOrderStore'
 import { useFilterStore } from '../app/store/useFilterStore'
-import { formatWeekRange, formatMonthYear, toISODate } from '../utils/dateHelpers'
+import { formatWeekRange, formatMonthYear } from '../utils/dateHelpers'
 
 export default function CalendarPage() {
   const location = useLocation()
@@ -40,27 +40,6 @@ export default function CalendarPage() {
   } = useCalendar()
 
   const filteredEvents = useFilteredEvents(events)
-
-  // Tampilkan filter hanya untuk interpreter yang memiliki jadwal dalam
-  // rentang kalender yang sedang dilihat.
-  const scheduledInterpreters = useMemo(() => {
-    const visibleDates = new Set(
-      view === 'month' ? [] : weekDays.map((day) => toISODate(day)),
-    )
-    const monthPrefix = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`
-    const scheduledIds = new Set(
-      events
-        .filter((event) =>
-          view === 'month'
-            ? event.date?.startsWith(monthPrefix)
-            : visibleDates.has(event.date),
-        )
-        .map((event) => event.interpreter_id)
-        .filter(Boolean),
-    )
-
-    return interpreters.filter((interpreter) => scheduledIds.has(interpreter.id))
-  }, [current, events, interpreters, view, weekDays])
 
   // Peta interpreter by id untuk lookup cepat di grid.
   const interpretersById = useMemo(
@@ -163,7 +142,7 @@ export default function CalendarPage() {
         </div>
       </PageHeader>
 
-      <FilterBar interpreters={scheduledInterpreters} />
+      <TodayDutyHighlights events={events} interpretersById={interpretersById} />
 
       {/* Loading awal -> skeleton */}
       {!eventsLoaded && eventsLoading ? (
