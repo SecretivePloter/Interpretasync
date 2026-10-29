@@ -16,6 +16,7 @@ import InventarisPage from '../pages/InventarisPage'
 import ValidatorPage from '../pages/ValidatorPage'
 import GaleriSertifikat from '../pages/GaleriSertifikat'
 import MassGeneratePage from '../pages/MassGeneratePage'
+import PublicDisplayCalendar from '../pages/PublicDisplayCalendar'
 
 const MANAJEMEN = ['manajemen']
 const ALL_ROLES = ['manajemen', 'operator']
@@ -29,6 +30,7 @@ export default function Router({ session, ready }) {
         element={session ? <Navigate to="/kalender" replace /> : <LoginPage />}
       />
       <Route path="/validator" element={<ValidatorPage />} />
+      <Route path="/display-source" element={<PublicDisplayCalendar />} />
 
       {/* Privat */}
       <Route
