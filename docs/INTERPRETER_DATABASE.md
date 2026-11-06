@@ -1,5 +1,10 @@
 # Database interpreter
 
+## Visualisasi tiga kategori fee
+Kartu direktori menampilkan tiga baris tarif sekaligus: Harian · Full day (per hari), Harian · Half day (per half day), dan Bulanan (per bulan). Ikon, label, nominal, dan satuan dipisahkan dengan garis antarkategori. Tarif kosong memakai Belum diisi. Variasi aktivitas tetap memakai Mulai; tidak ada konversi gaji bulanan ke harian. Saat anggaran aktif, kategori yang dipakai untuk pencarian disorot dengan label filter aktif.
+
+Popup anggaran memakai tiga pilihan radio visual dengan kategori yang sama. Kategori lainnya (jam/sesi/event) tetap tersedia di bagian lipat. Filter dan urutan fee mengikuti kategori terpilih, sementara tiga tarif utama tetap terlihat di hasil.
+
 ## Revisi direktori ringkas dan popup filter
 Kartu direktori fokus pada foto/nama, fee IDR per satuan yang dipilih, dan tag perusahaan dari track record (completed experiences dan past calendar; reference-only, future dan cancelled dikecualikan). Perusahaan dapat dikenali dari kolom company atau kode eksplisit pada judul kalender, misalnya TMMIN, SHP dan KAO. Tarif bukan sumber tag pengalaman. Blacklist tetap ditampilkan tanpa statistik panjang atau pesan berulang.
 
