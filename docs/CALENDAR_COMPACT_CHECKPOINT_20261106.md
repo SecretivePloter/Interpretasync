@@ -1,5 +1,8 @@
 # Checkpoint sebelum mode ringkas sebulan
 
+## Revisi berikutnya: highlight kembali inline
+Atas permintaan pemilik, highlight Bertugas hari ini kembali langsung di atas kalender tanpa popup. Mode bulanan memakai varian compact dengan header satu baris dan kartu44px minimum; ponsel2kolom, desktop auto-fill200px. Mode mingguan mempertahankan varian penuh. Browser snapshot115jadwal: pada1819×921 highlight87px dan area bulan712/712px tanpa scroll vertikal. Mobile390px highlight167px, root overflow0. Tidak ada perubahan data.
+
 - Checkpoint GitHub: `codex/checkpoint-before-month-compact-20261106`
 - Commit: `f7fe1c19eca4ced4696610895a8b587857a84646`
 - Deployment sebelum revisi: `dpl_AeC2xgXdx5sVHRCvdNi3nmJJA2AC`

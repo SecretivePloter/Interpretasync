@@ -6,7 +6,6 @@ import PageHeader from '../components/layout/PageHeader'
 import TodayDutyHighlights from '../components/calendar/TodayDutyHighlights'
 import CalendarGrid from '../components/calendar/CalendarGrid'
 import MonthGrid from '../components/calendar/MonthGrid'
-import Modal from '../components/ui/Modal'
 import EventModal from '../components/calendar/EventModal'
 import Skeleton from '../components/ui/Skeleton'
 import { useCalendar } from '../hooks/useCalendar'
@@ -28,7 +27,6 @@ export default function CalendarPage() {
 
   // 'week' | 'month'
   const [view, setView] = useState('month')
-  const [todayExpanded,setTodayExpanded]=useState(false)
 
   const {
     current,
@@ -145,9 +143,7 @@ export default function CalendarPage() {
         </div>
       </PageHeader>
 
-      {view==='month'&&<div className="shrink-0 border-b border-outline/30 px-md py-xs flex flex-wrap items-center justify-between gap-sm text-caption bg-surface-container"><span className="text-on-surface-variant">Hari ini · {events.filter(e=>e.date===toISODate(new Date())).length} jadwal</span><button className="text-primary py-xs" aria-expanded={todayExpanded} onClick={()=>setTodayExpanded(x=>!x)}>{todayExpanded?'Tutup highlight hari ini':'Lihat interpreter bertugas hari ini'}</button></div>}
-      {view==='week'&&<TodayDutyHighlights events={events} interpretersById={interpretersById} />}
-      {view==='month'&&<Modal open={todayExpanded} onClose={()=>setTodayExpanded(false)} title="Bertugas hari ini" maxWidth="max-w-4xl"><TodayDutyHighlights events={events} interpretersById={interpretersById}/></Modal>}
+      <TodayDutyHighlights events={events} interpretersById={interpretersById} compact={view==='month'} />
 
       {/* Loading awal -> skeleton */}
       {!eventsLoaded && eventsLoading ? (

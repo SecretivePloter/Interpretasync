@@ -13,7 +13,7 @@ function getEventTime(event) {
   return start && end ? `${start}–${end}` : 'Waktu belum diatur'
 }
 
-export default function TodayDutyHighlights({ events, interpretersById }) {
+export default function TodayDutyHighlights({ events, interpretersById, compact=false }) {
   const colors=useMemo(()=>buildCalendarColors(interpretersById),[interpretersById])
   const today = new Date()
   const todayIso = toISODate(today)
@@ -50,14 +50,14 @@ export default function TodayDutyHighlights({ events, interpretersById }) {
   return (
     <section
       aria-labelledby="today-duty-heading"
-      className="shrink-0 border-b border-outline-variant/15 bg-surface-container-low px-md py-md lg:px-xl"
+      className={`shrink-0 border-b border-outline-variant/15 bg-surface-container-low px-md ${compact?'py-xs':'py-md lg:px-xl'}`}
     >
-      <div className="mb-sm flex flex-wrap items-center justify-between gap-x-md gap-y-xs">
+      <div className={`${compact?'mb-1':'mb-sm'} flex flex-wrap items-center justify-between gap-x-md gap-y-xs`}>
         <div className="flex min-w-0 items-center gap-sm">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <div className={`flex ${compact?'h-6 w-6':'h-8 w-8'} shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary`}>
             <CalendarDays size={16} aria-hidden="true" />
           </div>
-          <div className="min-w-0">
+          <div className={compact?'min-w-0 flex flex-wrap items-center gap-x-sm':'min-w-0'}>
             <h2 id="today-duty-heading" className="font-h3 text-h3 text-on-surface">
               Bertugas hari ini
             </h2>
@@ -90,7 +90,7 @@ export default function TodayDutyHighlights({ events, interpretersById }) {
           Belum ada jadwal interpreter untuk hari ini.
         </div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,220px),1fr))] gap-sm">
+        <div className={compact?'grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,200px),1fr))] gap-xs':'grid grid-cols-[repeat(auto-fill,minmax(min(100%,220px),1fr))] gap-sm'}>
           {duties.map(({ key, interpreter, events: assignedEvents }) => {
             const color = colors[interpreter?.id]?.bg||unassignedColor.bg
             const visible = interpreter ? isVisible(interpreter.id) : true
@@ -108,7 +108,7 @@ export default function TodayDutyHighlights({ events, interpretersById }) {
                     colorKey={interpreter.color_key}
                     avatarUrl={interpreter.avatar_url}
                     size="sm"
-                    className="!h-9 !w-9"
+                    className={compact?'!h-7 !w-7':'!h-9 !w-9'}
                   />
                 ) : (
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant/30 bg-surface-container text-on-surface-variant">
@@ -135,7 +135,7 @@ export default function TodayDutyHighlights({ events, interpretersById }) {
               </>
             )
 
-            const cardClass = `flex min-h-[58px] min-w-0 items-center gap-sm rounded-xl border border-outline-variant/20 bg-surface px-sm py-xs text-left shadow-sm transition-colors ${
+            const cardClass = `flex ${compact?'min-h-[44px]':'min-h-[58px]'} min-w-0 items-center gap-sm rounded-xl border border-outline-variant/20 bg-surface px-sm py-xs text-left shadow-sm transition-colors ${
               interpreter
                 ? 'cursor-pointer hover:border-outline-variant/50 hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
                 : ''
