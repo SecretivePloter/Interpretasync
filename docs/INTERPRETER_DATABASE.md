@@ -1,5 +1,12 @@
 # Database interpreter
 
+## Revisi track record dan tarif, 6 November 2026
+- Tombol per baris "Lengkapi pengalaman & rating" dihapus. Riwayat ditampilkan sebagai timeline berkelompok per bulan, terbaru lebih dahulu. Tugas selesai terkonfirmasi memakai status tersendiri; event yang telah lewat memakai label riwayat kalender. Tugas future dan pengalaman cancelled tidak menjadi tugas selesai.
+- Tarif terbaru pemilik bertanggal 5 November 2026 dimasukkan langsung ke database: 55 variasi (30 full day, 12 half day, 13 bulanan). Tarif tetap mempertahankan angka, aktivitas, pasangan bahasa, dan pengecualian akomodasi. Data tarif aktual tidak disimpan dalam repository publik.
+- Alias Budi Hartono/Budi, Joe/Juhana dan Yanoshin/Yanosin dikonfirmasi pemilik. Profil yang belum ada dibuat tanpa mengarang kontak.
+- Tabel interpreter_restrictions menyimpan pembatasan yang dikonfirmasi pemilik: 4 global dan 2 khusus TMMIN. Tarif tetap tersimpan sebagai referensi biaya; pembatasan terlihat di profil dan direktori. Nama global-blacklist tidak muncul sebagai "Tidak ada jadwal" ketika filter itu dipilih. Pembatasan scoped memengaruhi status ketika perusahaan yang dipilih cocok.
+- Nominal blacklist tanpa satuan disimpan sebagai catatan pembatasan, tidak diberi satuan tarif buatan. Tarif tanpa nominal lembur/transport menampilkan "Belum ditetapkan".
+
 ## Penggunaan
 1. Buka **Profil / Database Interpreter**. Cari nama, spesialisasi, pengalaman proyek; pilih perusahaan, tanggal dan jam request. Urutkan nama, perusahaan, proyek, jumlah tugas selesai atau rating.
 2. Status **Ada tugas** berarti ada jadwal beririsan dengan jam request. **Tidak tersedia** berasal dari blok tanggal. **Tidak ada jadwal** bukan konfirmasi kesiapan menerima tugas. Penugasan kalender dengan jam placeholder 06–21 tetap memblok waktu secara konservatif.

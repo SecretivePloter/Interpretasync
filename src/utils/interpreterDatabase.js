@@ -15,3 +15,13 @@ export function averageRating(experiences) {
   const rated = experiences.filter(e => Number(e.rating) > 0)
   return rated.length ? rated.reduce((sum,e) => sum + Number(e.rating),0) / rated.length : null
 }
+export function restrictionApplies(restriction,company='') {
+  return !restriction.company || Boolean(company && company.toLowerCase().includes(restriction.company.toLowerCase()))
+}
+export function buildTrackRecord(events,experiences,today=localDate()) {
+  const linked=new Set(experiences.filter(x=>x.event_id&&['completed','cancelled'].includes(x.status)).map(x=>x.event_id))
+  return [
+    ...experiences.filter(x=>x.status==='completed').map(x=>({...x,key:`experience-${x.id}`,date:x.end_date||x.start_date||String(x.year||''),title:x.project,completed:true})),
+    ...events.filter(x=>x.date<today&&!linked.has(x.id)).map(x=>({...x,key:`event-${x.id}`,completed:false})),
+  ].sort((a,b)=>b.date.localeCompare(a.date))
+}

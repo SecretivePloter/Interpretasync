@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useEventStore } from '../app/store/useEventStore'
 import { listRecords } from '../services/interpreterDatabase'
-import { availability, averageRating, localDate } from '../utils/interpreterDatabase'
+import { availability, averageRating, localDate, restrictionApplies } from '../utils/interpreterDatabase'
 import { TextInput, Select } from '../components/ui/Field'
 import Button from '../components/ui/Button'
 import WorkbookReview from '../components/profile/WorkbookReview'
@@ -24,7 +24,7 @@ export default function ProfileListPage() {
   const [search, setSearch] = useState('')
   const events = useEventStore(s=>s.events)
   const eventsLoaded = useEventStore(s=>s.loaded)
-  const [extra,setExtra] = useState({history:[],rates:[],blocks:[]})
+  const [extra,setExtra] = useState({history:[],rates:[],blocks:[],restrictions:[]})
   const [company,setCompany] = useState('')
   const [duty,setDuty] = useState('')
   const [date,setDate] = useState(localDate())
@@ -35,10 +35,11 @@ export default function ProfileListPage() {
   const [revision,setRevision] = useState(0)
   const [error,setError] = useState('')
   const [extraReady,setExtraReady] = useState(false)
-  useEffect(()=>{let active=true;setExtraReady(false);Promise.all(['interpreter_experiences','interpreter_rates','interpreter_blocks'].map(t=>listRecords(t))).then(([history,rates,blocks])=>{if(active){setExtra({history,rates,blocks});setError('');setExtraReady(true)}}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[revision])
-  const companies = [...new Set([...extra.history,...extra.rates,...events].map(x=>x.company).filter(Boolean))].sort()
+  useEffect(()=>{let active=true;setExtraReady(false);Promise.all(['interpreter_experiences','interpreter_rates','interpreter_blocks','interpreter_restrictions'].map(t=>listRecords(t))).then(([history,rates,blocks,restrictions])=>{if(active){setExtra({history,rates,blocks,restrictions});setError('');setExtraReady(true)}}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[revision])
+  const companies = [...new Set([...extra.history,...extra.rates,...events,...extra.restrictions].map(x=>x.company).filter(Boolean))].sort()
   const validRange = date && start && end && start < end
-  const status = i => !validRange ? 'Rentang belum valid' : !eventsLoaded || !extraReady ? 'Ketersediaan belum termuat' : availability(i,events,extra.blocks,date,start,end)
+  const restrictionsFor = i => extra.restrictions.filter(r=>r.interpreter_id===i.id)
+  const status = i => !validRange ? 'Rentang belum valid' : !eventsLoaded || !extraReady ? 'Ketersediaan belum termuat' : restrictionsFor(i).some(r=>!r.company)?'Blacklist semua perusahaan':restrictionsFor(i).some(r=>restrictionApplies(r,company))?'Dibatasi perusahaan':availability(i,events,extra.blocks,date,start,end)
   const relevant = i => extra.history.filter(x=>x.interpreter_id===i.id&&(!company||x.company===company))
 
   const filtered = useMemo(() => {
@@ -70,7 +71,7 @@ export default function ProfileListPage() {
         <div className="rounded-xl bg-surface-container-low border border-outline-variant/20 p-lg mb-lg flex flex-col gap-md">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-md">
             <Select label="Perusahaan" value={company} onChange={e=>setCompany(e.target.value)}><option value="">Semua perusahaan</option>{companies.map(c=><option key={c}>{c}</option>)}</Select>
-            <Select label="Status pada rentang pilihan" value={duty} onChange={e=>setDuty(e.target.value)}><option value="">Semua status</option>{['Ada tugas','Tidak ada jadwal','Tidak tersedia','Nonaktif'].map(c=><option key={c}>{c}</option>)}</Select>
+            <Select label="Status pada rentang pilihan" value={duty} onChange={e=>setDuty(e.target.value)}><option value="">Semua status</option>{['Ada tugas','Tidak ada jadwal','Tidak tersedia','Nonaktif','Blacklist semua perusahaan','Dibatasi perusahaan'].map(c=><option key={c}>{c}</option>)}</Select>
             <Select label="Urutkan" value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Nama A–Z</option><option value="company">Perusahaan A–Z</option><option value="project">Proyek A–Z</option><option value="experience">Tugas selesai terbanyak</option><option value="rating">Rating tertinggi</option></Select>
             <TextInput label="Tanggal request" type="date" value={date} onChange={e=>setDate(e.target.value)} />
             <TextInput label="Jam mulai" type="time" value={start} onChange={e=>setStart(e.target.value)} />
@@ -124,6 +125,7 @@ export default function ProfileListPage() {
                     />
                   </div>
                   <p className="text-caption text-primary">{status(it)}</p>
+                  {restrictionsFor(it).length>0&&<p className="text-caption text-error">{restrictionsFor(it).map(r=>r.company?`Blacklist ${r.company}`:'Blacklist semua perusahaan').join(' · ')}</p>}
                   <p className="text-caption text-on-surface-variant">{relevant(it).filter(x=>x.status==='completed').length} tugas selesai terkonfirmasi · {averageRating(relevant(it))?`★ ${averageRating(relevant(it)).toFixed(1)}/5 (${relevant(it).filter(x=>x.rating).length} penilaian)`:'Belum dinilai'}</p>
                   <p className="text-caption text-on-surface-variant break-words">{[...new Set(relevant(it).map(x=>x.company))].slice(0,3).join(' · ')||'Pengalaman perusahaan belum dilengkapi'}</p>
                   <div className="flex flex-wrap gap-xs">
