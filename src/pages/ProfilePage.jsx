@@ -17,6 +17,7 @@ import ProfileStats from '../components/profile/ProfileStats'
 import ProfileSchedule from '../components/profile/ProfileSchedule'
 import BookingDensity from '../components/profile/BookingDensity'
 import InterpreterModal from '../components/profile/InterpreterModal'
+import ProfileDatabase from '../components/profile/ProfileDatabase'
 import { useInterpreterStore } from '../app/store/useInterpreterStore'
 import { useEventStore } from '../app/store/useEventStore'
 import { useOrderStore } from '../app/store/useOrderStore'
@@ -122,7 +123,8 @@ export default function ProfilePage() {
           </div>
 
           {/* Panel kanan */}
-          <div className="flex-1 flex flex-col gap-lg">
+          <div className="flex-1 min-w-0 flex flex-col gap-lg">
+            <ProfileDatabase key={id} interpreterId={id} events={myEvents} />
             <ProfileStats stats={stats} />
             <ProfileSchedule upcoming={upcoming} orders={myOrders} />
           </div>

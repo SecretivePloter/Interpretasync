@@ -28,7 +28,15 @@ export const useInterpreterStore = create((set, get) => ({
 
   // Aksi CRUD (UI memanggil ini; realtime menyinkronkan state lewat apply*).
   add: async (payload) => createInterpreter(payload),
-  edit: async (id, payload) => updateInterpreter(id, payload),
+  edit: async (id, payload) => {
+    const updated = await updateInterpreter(id, payload)
+    set((s) => ({
+      interpreters: s.interpreters.map((interpreter) =>
+        interpreter.id === id ? updated : interpreter,
+      ),
+    }))
+    return updated
+  },
   remove: async (id) => deleteInterpreter(id),
 
   // Handler realtime — jaga state tetap terurut by name.

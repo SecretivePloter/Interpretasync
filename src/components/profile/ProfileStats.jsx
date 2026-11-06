@@ -21,9 +21,9 @@ export default function ProfileStats({ stats }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-md">
       <StatCard icon={CalendarCheck} label="Sesi Bulan Ini" value={stats.sessions} accent="#acc7ff" />
-      <StatCard icon={Clock} label="Total Jam" value={`${stats.hours} jam`} accent="#4eddbb" />
+      <StatCard icon={Clock} label="Jam Terjadwal" value={`${stats.hours} jam`} accent="#4eddbb" />
       <StatCard icon={AlertCircle} label="Order Pending" value={stats.pending} accent="#ffb4ab" />
-      <StatCard icon={Wallet} label="Fee Bulan Ini" value={formatRupiah(stats.fee)} accent="#cfbdff" />
+      <StatCard icon={Wallet} label="Estimasi Order" value={formatRupiah(stats.fee)} accent="#cfbdff" />
     </div>
   )
 }

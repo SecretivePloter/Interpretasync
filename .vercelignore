@@ -1,0 +1,5 @@
+.local
+.playwright-cli
+.env*
+output
+node_modules
