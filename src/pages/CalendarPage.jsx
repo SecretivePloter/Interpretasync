@@ -14,7 +14,7 @@ import { useInterpreterStore } from '../app/store/useInterpreterStore'
 import { useEventStore } from '../app/store/useEventStore'
 import { useOrderStore } from '../app/store/useOrderStore'
 import { useFilterStore } from '../app/store/useFilterStore'
-import { formatWeekRange, formatMonthYear } from '../utils/dateHelpers'
+import { formatWeekRange, formatMonthYear, toISODate } from '../utils/dateHelpers'
 
 export default function CalendarPage() {
   const location = useLocation()
@@ -26,7 +26,8 @@ export default function CalendarPage() {
   const showOnly = useFilterStore((s) => s.showOnly)
 
   // 'week' | 'month'
-  const [view, setView] = useState('week')
+  const [view, setView] = useState('month')
+  const [todayExpanded,setTodayExpanded]=useState(false)
 
   const {
     current,
@@ -40,6 +41,7 @@ export default function CalendarPage() {
   } = useCalendar()
 
   const filteredEvents = useFilteredEvents(events)
+  useEffect(()=>{if(view==='month'&&!location.state?.filterInterpreter)useFilterStore.getState().showAll()},[view,location.state?.filterInterpreter])
 
   // Peta interpreter by id untuk lookup cepat di grid.
   const interpretersById = useMemo(
@@ -142,7 +144,8 @@ export default function CalendarPage() {
         </div>
       </PageHeader>
 
-      <TodayDutyHighlights events={events} interpretersById={interpretersById} />
+      {view==='month'&&<div className="shrink-0 border-b border-outline/30 px-md py-xs flex flex-wrap items-center justify-between gap-sm text-caption bg-surface-container"><span className="text-on-surface-variant">Hari ini · {events.filter(e=>e.date===toISODate(new Date())).length} jadwal</span><button className="text-primary py-xs" aria-expanded={todayExpanded} onClick={()=>setTodayExpanded(x=>!x)}>{todayExpanded?'Tutup highlight hari ini':'Lihat interpreter bertugas hari ini'}</button></div>}
+      {(view==='week'||todayExpanded)&&<TodayDutyHighlights events={events} interpretersById={interpretersById} />}
 
       {/* Loading awal -> skeleton */}
       {!eventsLoaded && eventsLoading ? (
@@ -164,6 +167,7 @@ export default function CalendarPage() {
         <MonthGrid
           currentDate={current}
           events={filteredEvents}
+          totalEvents={events.length}
           interpretersById={interpretersById}
           onDayClick={handleDayClick}
           onEventClick={handleEventClick}

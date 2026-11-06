@@ -11,6 +11,7 @@ import {
 import { toISODate, minutesToTime, isSameDay } from '../../utils/dateHelpers'
 import { eventPosition } from '../../hooks/useCalendar'
 import EventBlock from './EventBlock'
+import { buildCalendarColors } from '../../utils/calendarColors'
 
 const TOTAL_HOURS = CALENDAR_END_HOUR - CALENDAR_START_HOUR
 const GRID_HEIGHT = TOTAL_HOURS * HOUR_HEIGHT
@@ -31,6 +32,7 @@ export default function CalendarGrid({
   )
 
   const now = new Date()
+  const colors=useMemo(()=>buildCalendarColors(interpretersById),[interpretersById])
 
   // Hitung jam dari posisi klik (snap 30 menit), relatif terhadap HOUR_HEIGHT.
   const handleColumnClick = (e, day) => {
@@ -143,6 +145,7 @@ export default function CalendarGrid({
                       key={ev.id}
                       event={ev}
                       interpreter={interpretersById[ev.interpreter_id]}
+                      calendarColor={colors[ev.interpreter_id]}
                       compact={cols > 1}
                       height={pos.height}
                       onClick={onEventClick}

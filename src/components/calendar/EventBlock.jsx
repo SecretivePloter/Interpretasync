@@ -1,12 +1,12 @@
 // Blok event di grid kalender. Posisi (top/left/width/height) diberikan via `style`.
 // Warna mengikuti interpreter; hover memunculkan tooltip detail.
-import { getColorHex, withAlpha } from '../../utils/colors'
 import { trimTime, isAllDayEvent } from '../../utils/dateHelpers'
 import { MapPin, Clock, StickyNote, Building2, Sun } from 'lucide-react'
 import Avatar from '../ui/Avatar'
+import { unassignedColor } from '../../utils/calendarColors'
 
-export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60 }) {
-  const hex = getColorHex(interpreter?.color_key)
+export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60, calendarColor }) {
+  const {bg:hex,foreground}=calendarColor||unassignedColor
   const allDay = isAllDayEvent(event.start_time, event.end_time)
   const time = allDay
     ? 'Seharian'
@@ -21,7 +21,8 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
       className="absolute rounded-lg px-2 py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible"
       style={{
         ...style,
-        backgroundColor: withAlpha(hex, 0.18),
+        backgroundColor: hex,
+        color: foreground,
         borderLeft: `3px solid ${hex}`,
       }}
       onClick={(e) => {
@@ -29,7 +30,7 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         onClick?.(event)
       }}
     >
-      <div className="flex min-w-0 items-center gap-1 font-label-tag text-label-tag" style={{ color: hex }}>
+      <div className="flex min-w-0 items-center gap-1 font-label-tag text-label-tag font-bold" style={{ color: foreground }}>
         {interpreter?.name && (
           <Avatar
             name={interpreter.name}
@@ -41,11 +42,11 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         )}
         <span className="truncate min-w-0">{interpreter?.name || '—'}</span>
       </div>
-      <div className="font-caption text-caption text-on-surface line-clamp-1 leading-tight">
+      <div className="font-caption text-caption line-clamp-1 leading-tight" style={{color:foreground}}>
         {event.title}
       </div>
       {showTime && (
-        <div className="flex items-center gap-[3px] text-[10px] text-on-surface-variant mt-[1px] line-clamp-1">
+        <div className="flex items-center gap-[3px] text-[11px] mt-[1px] line-clamp-1" style={{color:foreground}}>
           {allDay && <Sun size={10} className="shrink-0" />}
           <span className="truncate">{time}</span>
         </div>
@@ -54,13 +55,13 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         <>
           {/* Lokasi & perusahaan tampil hanya bila terisi */}
           {event.company && (
-            <div className="flex items-center gap-[3px] text-[10px] text-on-surface-variant mt-[1px] line-clamp-1">
+            <div className="flex items-center gap-[3px] text-[11px] mt-[1px] line-clamp-1" style={{color:foreground}}>
               <Building2 size={10} className="shrink-0" />
               <span className="truncate">{event.company}</span>
             </div>
           )}
           {event.location && (
-            <div className="flex items-center gap-[3px] text-[10px] text-on-surface-variant mt-[1px] line-clamp-1">
+            <div className="flex items-center gap-[3px] text-[11px] mt-[1px] line-clamp-1" style={{color:foreground}}>
               <MapPin size={10} className="shrink-0" />
               <span className="truncate">{event.location}</span>
             </div>

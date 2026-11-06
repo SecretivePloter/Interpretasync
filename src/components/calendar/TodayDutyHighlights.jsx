@@ -3,7 +3,8 @@ import { CalendarDays, Clock3, RotateCcw, UsersRound } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import { useFilterControls } from '../../hooks/useFilter'
 import { formatDateLong, toISODate, trimTime, isAllDayEvent } from '../../utils/dateHelpers'
-import { getColorHex, withAlpha } from '../../utils/colors'
+import { withAlpha } from '../../utils/colors'
+import { buildCalendarColors, unassignedColor } from '../../utils/calendarColors'
 
 function getEventTime(event) {
   if (isAllDayEvent(event.start_time, event.end_time)) return 'Seharian'
@@ -13,6 +14,7 @@ function getEventTime(event) {
 }
 
 export default function TodayDutyHighlights({ events, interpretersById }) {
+  const colors=useMemo(()=>buildCalendarColors(interpretersById),[interpretersById])
   const today = new Date()
   const todayIso = toISODate(today)
   const todayEvents = useMemo(
@@ -90,7 +92,7 @@ export default function TodayDutyHighlights({ events, interpretersById }) {
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,220px),1fr))] gap-sm">
           {duties.map(({ key, interpreter, events: assignedEvents }) => {
-            const color = getColorHex(interpreter?.color_key)
+            const color = colors[interpreter?.id]?.bg||unassignedColor.bg
             const visible = interpreter ? isVisible(interpreter.id) : true
             const firstEvent = assignedEvents[0]
             const detail = `${firstEvent.title || 'Jadwal'} · ${getEventTime(firstEvent)}`
