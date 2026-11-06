@@ -1,147 +1,103 @@
-// Daftar semua interpreter sebagai kartu. Klik kartu -> halaman profil detail.
 import { useState, useMemo, useEffect } from 'react'
-import { useEventStore } from '../app/store/useEventStore'
-import { listRecords } from '../services/interpreterDatabase'
-import { availability, averageRating, localDate, restrictionApplies } from '../utils/interpreterDatabase'
-import { TextInput, Select } from '../components/ui/Field'
-import Button from '../components/ui/Button'
-import WorkbookReview from '../components/profile/WorkbookReview'
 import { useNavigate } from 'react-router-dom'
-import { Search, Users } from 'lucide-react'
+import { Search, SlidersHorizontal, ArrowUpRight, X } from 'lucide-react'
 import PageHeader from '../components/layout/PageHeader'
 import Avatar from '../components/ui/Avatar'
-import Badge from '../components/ui/Badge'
-import EmptyState from '../components/ui/EmptyState'
-import Skeleton from '../components/ui/Skeleton'
+import Button from '../components/ui/Button'
+import Modal from '../components/ui/Modal'
+import { TextInput, Select } from '../components/ui/Field'
+import WorkbookReview from '../components/profile/WorkbookReview'
 import { useInterpreterStore } from '../app/store/useInterpreterStore'
-import { getColorHex } from '../utils/colors'
+import { useEventStore } from '../app/store/useEventStore'
+import { listRecords } from '../services/interpreterDatabase'
+import { availability, averageRating, localDate, restrictionApplies, directoryFee, matchesFee, trackCompanies, money, units } from '../utils/interpreterDatabase'
 
-export default function ProfileListPage() {
-  const navigate = useNavigate()
-  const interpreters = useInterpreterStore((s) => s.interpreters)
-  const loading = useInterpreterStore((s) => s.loading)
-  const loaded = useInterpreterStore((s) => s.loaded)
-  const [search, setSearch] = useState('')
-  const events = useEventStore(s=>s.events)
-  const eventsLoaded = useEventStore(s=>s.loaded)
-  const [extra,setExtra] = useState({history:[],rates:[],blocks:[],restrictions:[]})
-  const [company,setCompany] = useState('')
-  const [duty,setDuty] = useState('')
-  const [date,setDate] = useState(localDate())
-  const [start,setStart] = useState('08:00')
-  const [end,setEnd] = useState('17:00')
-  const [sort,setSort] = useState('name')
-  const [review,setReview] = useState(false)
-  const [revision,setRevision] = useState(0)
-  const [error,setError] = useState('')
-  const [extraReady,setExtraReady] = useState(false)
-  useEffect(()=>{let active=true;setExtraReady(false);Promise.all(['interpreter_experiences','interpreter_rates','interpreter_blocks','interpreter_restrictions'].map(t=>listRecords(t))).then(([history,rates,blocks,restrictions])=>{if(active){setExtra({history,rates,blocks,restrictions});setError('');setExtraReady(true)}}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[revision])
-  const companies = [...new Set([...extra.history,...extra.rates,...events,...extra.restrictions].map(x=>x.company).filter(Boolean))].sort()
-  const validRange = date && start && end && start < end
-  const restrictionsFor = i => extra.restrictions.filter(r=>r.interpreter_id===i.id)
-  const status = i => !validRange ? 'Rentang belum valid' : !eventsLoaded || !extraReady ? 'Ketersediaan belum termuat' : restrictionsFor(i).some(r=>!r.company)?'Blacklist semua perusahaan':restrictionsFor(i).some(r=>restrictionApplies(r,company))?'Dibatasi perusahaan':availability(i,events,extra.blocks,date,start,end)
-  const relevant = i => extra.history.filter(x=>x.interpreter_id===i.id&&(!company||x.company===company))
+const defaults=()=>({company:'',duty:'',date:localDate(),start:'08:00',end:'17:00',sort:'name',unit:'day',min:'',max:''})
+const unitLabels={day:'full day',half_day:'half day',month:'bulan',hour:'jam',session:'sesi',event:'event'}
+function activeCount(f){const d=defaults();return Object.keys(d).filter(k=>f[k]!==d[k]).length}
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return interpreters.filter(i=>i.name!=='Belum Ditentukan').filter(i=>!duty||status(i)===duty).filter(i=>!company||[...extra.history,...extra.rates,...events].some(x=>x.interpreter_id===i.id&&x.company===company)).filter(
-      (i) =>
-        i.name.toLowerCase().includes(q) ||
-        (i.specialties || []).some((s) => s.toLowerCase().includes(q)) ||
-        relevant(i).some(x=>`${x.company} ${x.project}`.toLowerCase().includes(q)),
-    ).sort((a,b)=>sort==='rating'?(averageRating(relevant(b))||0)-(averageRating(relevant(a))||0):sort==='experience'?relevant(b).filter(x=>x.status==='completed').length-relevant(a).filter(x=>x.status==='completed').length:sort==='company'||sort==='project'?(relevant(a).map(x=>x[sort]).sort()[0]||'\uffff').localeCompare(relevant(b).map(x=>x[sort]).sort()[0]||'\uffff'):a.name.localeCompare(b.name))
-  }, [interpreters, search,extra,company,duty,date,start,end,sort,events,eventsLoaded,extraReady])
-
-  return (
-    <>
-      <PageHeader title="Database Interpreter" subtitle="Pengalaman proyek, ketersediaan, dan fee">
-        <Button variant="outline" onClick={()=>setReview(true)}>Tinjau data Excel</Button>
-        <div className="flex items-center gap-sm px-md py-sm rounded-lg bg-surface-container-low border border-outline-variant/10 w-72">
-          <Search size={18} className="text-on-surface-variant" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama / spesialisasi…"
-            className="bg-transparent border-none focus:outline-none text-body font-body w-full text-on-surface placeholder:text-on-surface-variant/60"
-          />
-        </div>
-      </PageHeader>
-
-      <div className="flex-1 overflow-y-auto p-md lg:p-xl">
-        <div className="rounded-xl bg-surface-container-low border border-outline-variant/20 p-lg mb-lg flex flex-col gap-md">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-md">
-            <Select label="Perusahaan" value={company} onChange={e=>setCompany(e.target.value)}><option value="">Semua perusahaan</option>{companies.map(c=><option key={c}>{c}</option>)}</Select>
-            <Select label="Status pada rentang pilihan" value={duty} onChange={e=>setDuty(e.target.value)}><option value="">Semua status</option>{['Ada tugas','Tidak ada jadwal','Tidak tersedia','Nonaktif','Blacklist semua perusahaan','Dibatasi perusahaan'].map(c=><option key={c}>{c}</option>)}</Select>
-            <Select label="Urutkan" value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Nama A–Z</option><option value="company">Perusahaan A–Z</option><option value="project">Proyek A–Z</option><option value="experience">Tugas selesai terbanyak</option><option value="rating">Rating tertinggi</option></Select>
-            <TextInput label="Tanggal request" type="date" value={date} onChange={e=>setDate(e.target.value)} />
-            <TextInput label="Jam mulai" type="time" value={start} onChange={e=>setStart(e.target.value)} />
-            <TextInput label="Jam selesai" type="time" value={end} onChange={e=>setEnd(e.target.value)} />
-          </div>
-          {!validRange&&<p role="alert" className="text-error">Isi tanggal dan rentang jam yang valid dalam hari yang sama.</p>}
-          <p className="text-caption text-on-surface-variant">Tidak ada jadwal belum berarti siap menerima pekerjaan. Konfirmasi kesiapan sebelum booking. Riwayat penawaran tidak dihitung sebagai tugas selesai.</p>
-          {error&&<p role="alert" className="text-error">{error} <Button variant="ghost" onClick={()=>setRevision(n=>n+1)}>Coba lagi</Button></p>}
-          <p className="text-caption text-on-surface-variant">{filtered.length} interpreter ditemukan</p>
-        </div>
-        {!loaded && loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="Belum ada interpreter"
-            description="Tambahkan interpreter melalui halaman Pengaturan."
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-            {filtered.map((it) => {
-              const hex = getColorHex(it.color_key)
-              const active = it.status === 'aktif'
-              return (
-                <button
-                  key={it.id}
-                  onClick={() => navigate(`/profil/${it.id}`)}
-                  className="min-w-0 text-left bg-surface-container-low border border-outline-variant/10 rounded-xl p-lg flex flex-col gap-md hover:border-primary/30 hover:-translate-y-0.5 transition-all"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-md">
-                      <Avatar name={it.name} colorKey={it.color_key} avatarUrl={it.avatar_url} size="lg" />
-                      <div>
-                        <h3 className="font-h3 text-h3 text-on-surface">{it.name}</h3>
-                        <span className="font-caption text-caption text-on-surface-variant">
-                          {it.jlpt_level ? `JLPT ${it.jlpt_level}` : 'JLPT —'}
-                        </span>
-                      </div>
-                    </div>
-                    <span
-                      className="w-3 h-3 rounded-full mt-1"
-                      style={{
-                        backgroundColor: active ? '#2ECC71' : '#8c909e',
-                        boxShadow: active ? '0 0 10px rgba(46,204,113,0.5)' : 'none',
-                      }}
-                      title={active ? 'Aktif' : 'Non-aktif'}
-                    />
-                  </div>
-                  <p className="text-caption text-primary">{status(it)}</p>
-                  {restrictionsFor(it).length>0&&<p className="text-caption text-error">{restrictionsFor(it).map(r=>r.company?`Blacklist ${r.company}`:'Blacklist semua perusahaan').join(' · ')}</p>}
-                  <p className="text-caption text-on-surface-variant">{relevant(it).filter(x=>x.status==='completed').length} tugas selesai terkonfirmasi · {averageRating(relevant(it))?`★ ${averageRating(relevant(it)).toFixed(1)}/5 (${relevant(it).filter(x=>x.rating).length} penilaian)`:'Belum dinilai'}</p>
-                  <p className="text-caption text-on-surface-variant break-words">{[...new Set(relevant(it).map(x=>x.company))].slice(0,3).join(' · ')||'Pengalaman perusahaan belum dilengkapi'}</p>
-                  <div className="flex flex-wrap gap-xs">
-                    {(it.specialties || []).slice(0, 3).map((s) => (
-                      <Badge key={s} color={hex}>
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
+export default function ProfileListPage(){
+  const navigate=useNavigate()
+  const interpreters=useInterpreterStore(s=>s.interpreters)
+  const peopleLoaded=useInterpreterStore(s=>s.loaded)
+  const events=useEventStore(s=>s.events)
+  const eventsLoaded=useEventStore(s=>s.loaded)
+  const [extra,setExtra]=useState({history:[],rates:[],blocks:[],restrictions:[]})
+  const [ready,setReady]=useState(false)
+  const [error,setError]=useState('')
+  const [revision,setRevision]=useState(0)
+  const [search,setSearch]=useState('')
+  const [filters,setFilters]=useState(defaults)
+  const [draft,setDraft]=useState(defaults)
+  const [filterOpen,setFilterOpen]=useState(false)
+  const [formError,setFormError]=useState('')
+  const [review,setReview]=useState(false)
+  useEffect(()=>{
+    let active=true;setReady(false)
+    Promise.all(['interpreter_experiences','interpreter_rates','interpreter_blocks','interpreter_restrictions'].map(t=>listRecords(t))).then(([history,rates,blocks,restrictions])=>{if(active){setExtra({history,rates,blocks,restrictions});setError('');setReady(true)}}).catch(e=>{if(active)setError(e.message)})
+    return()=>{active=false}
+  },[revision])
+  const records=useMemo(()=>interpreters.filter(i=>i.name!=='Belum Ditentukan').map(i=>{
+    const history=extra.history.filter(r=>r.interpreter_id===i.id)
+    const jobs=events.filter(r=>r.interpreter_id===i.id)
+    const restrictions=extra.restrictions.filter(r=>r.interpreter_id===i.id)
+    const companies=trackCompanies(jobs,history)
+    const relevant=history.filter(x=>!filters.company||x.company?.toUpperCase()===filters.company.toUpperCase())
+    const fee=directoryFee(extra.rates.filter(r=>r.interpreter_id===i.id),filters)
+    const status=restrictions.some(r=>!r.company)?'Blacklist semua perusahaan':restrictions.some(r=>restrictionApplies(r,filters.company))?'Dibatasi perusahaan':availability(i,events,extra.blocks,filters.date,filters.start,filters.end)
+    return {...i,history,relevant,jobs,restrictions,companies,fee,status}
+  }),[interpreters,events,extra,filters])
+  const companies=useMemo(()=>[...new Set(records.flatMap(i=>i.companies))].sort(),[records])
+  const filtered=useMemo(()=>{
+    const q=search.trim().toLowerCase()
+    return records.filter(i=>(!filters.company||i.companies.includes(filters.company))&&(!filters.duty||i.status===filters.duty)&&matchesFee(i.fee,filters.min,filters.max)&&`${i.name} ${(i.specialties||[]).join(' ')} ${i.companies.join(' ')} ${i.jobs.map(j=>j.title).join(' ')} ${i.history.map(j=>j.project).join(' ')}`.toLowerCase().includes(q)).sort((a,b)=>{
+      if(filters.sort==='fee')return (a.fee?.amount??Infinity)-(b.fee?.amount??Infinity)||a.name.localeCompare(b.name)
+      if(filters.sort==='rating')return (averageRating(b.relevant)||0)-(averageRating(a.relevant)||0)||a.name.localeCompare(b.name)
+      if(filters.sort==='experience')return b.relevant.filter(x=>x.status==='completed').length-a.relevant.filter(x=>x.status==='completed').length||a.name.localeCompare(b.name)
+      if(filters.sort==='company')return (a.companies[0]||'\uffff').localeCompare(b.companies[0]||'\uffff')||a.name.localeCompare(b.name)
+      if(filters.sort==='project')return (a.jobs.map(j=>j.title).sort()[0]||a.history.map(j=>j.project).sort()[0]||'\uffff').localeCompare(b.jobs.map(j=>j.title).sort()[0]||b.history.map(j=>j.project).sort()[0]||'\uffff')||a.name.localeCompare(b.name)
+      return a.name.localeCompare(b.name)
+    })
+  },[records,search,filters])
+  const update=key=>e=>setDraft(f=>({...f,[key]:e.target.value}))
+  const apply=e=>{
+    e.preventDefault()
+    if(!draft.date||!draft.start||!draft.end||draft.end<=draft.start)return setFormError('Isi tanggal dan rentang jam yang valid dalam hari yang sama.')
+    if((draft.min!==''&&Number(draft.min)<0)||(draft.max!==''&&Number(draft.max)<=0)||(draft.min!==''&&draft.max!==''&&Number(draft.min)>=Number(draft.max)))return setFormError('Batas maksimum harus lebih besar dari batas minimum.')
+    setFilters({...draft});setFilterOpen(false);setFormError('')
+  }
+  const count=activeCount(filters)
+  const loaded=ready&&peopleLoaded&&eventsLoaded
+  return <>
+    <PageHeader title="Database Interpreter" subtitle="Temukan interpreter sesuai pengalaman dan anggaran">
+      <Button variant="ghost" onClick={()=>setReview(true)}>Tinjau data Excel</Button>
+    </PageHeader>
+    <div className="flex-1 overflow-y-auto p-md lg:p-xl flex flex-col gap-lg">
+      <div className="flex flex-wrap gap-sm items-center">
+        <div className="min-w-0 flex-1 basis-52 flex items-center gap-sm rounded-xl border border-outline-variant/20 bg-surface-container-low px-md py-sm"><Search size={18} className="shrink-0 text-on-surface-variant"/><input aria-label="Cari interpreter" placeholder="Cari nama atau perusahaan…" value={search} onChange={e=>setSearch(e.target.value)} className="min-w-0 w-full bg-transparent text-body text-on-surface outline-none placeholder:text-on-surface-variant"/></div>
+        <Button variant={count?'primary':'outline'} onClick={()=>{setDraft({...filters});setFormError('');setFilterOpen(true)}}><SlidersHorizontal size={17}/>Filter{count>0&&<span className="rounded-full bg-on-surface/10 px-sm text-caption">{count}</span>}</Button>
       </div>
-      {review&&<WorkbookReview onClose={()=>{setReview(false);setRevision(n=>n+1)}} />}
-    </>
-  )
+      <div className="flex flex-wrap justify-between items-center gap-sm text-caption text-on-surface-variant"><p role="status">{loaded?`${filtered.length} interpreter`:'Memuat database…'} · tarif per {unitLabels[filters.unit]}</p>{count>0&&<button className="inline-flex items-center gap-xs text-primary" onClick={()=>setFilters(defaults())}><X size={13}/>Reset filter</button>}</div>
+      {(filters.company||filters.min!==''||filters.max!=='')&&<div className="flex flex-wrap gap-xs text-caption">{filters.company&&<span className="rounded-full bg-primary/10 text-primary px-md py-xs">{filters.company}</span>}{filters.min!==''&&<span className="rounded-full bg-primary/10 text-primary px-md py-xs">Mulai {money(filters.min)}</span>}{filters.max!==''&&<span className="rounded-full bg-primary/10 text-primary px-md py-xs">Di bawah {money(filters.max)} / {unitLabels[filters.unit]}</span>}</div>}
+      {error&&<p role="alert" className="text-error">{error} <Button variant="ghost" onClick={()=>setRevision(n=>n+1)}>Coba lagi</Button></p>}
+      {loaded&&<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">{filtered.map(i=><button key={i.id} onClick={()=>navigate(`/profil/${i.id}`)} className="min-w-0 rounded-xl border border-outline-variant/15 bg-surface-container-low p-lg text-left hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors flex flex-col gap-md">
+        <div className="flex items-center gap-md min-w-0"><Avatar name={i.name} colorKey={i.color_key} avatarUrl={i.avatar_url} size="lg"/><div className="min-w-0 flex-1"><h2 className="font-h3 text-h3 text-on-surface break-words">{i.name}</h2><p className="text-caption text-on-surface-variant">{i.jlpt_level?`JLPT ${i.jlpt_level}`:i.status==='aktif'?'Interpreter':'Nonaktif'}</p></div><ArrowUpRight size={16} className="shrink-0 text-on-surface-variant"/></div>
+        <div><p className="font-h2 text-h2 text-on-surface">{i.fee?`${i.fee.varies?'Mulai ':''}${money(i.fee.amount)}`:'Tarif belum diisi'}</p><p className="text-caption text-on-surface-variant">{unitLabels[filters.unit]}{i.fee?.varies?' · sesuai aktivitas':''}</p></div>
+        <div className="flex flex-wrap gap-xs">{i.companies.slice(0,5).map(c=><span key={c} className="rounded-md bg-primary/10 text-primary px-sm py-xs text-caption">{c}</span>)}{i.companies.length>5&&<span className="text-caption text-on-surface-variant py-xs">+{i.companies.length-5}</span>}{!i.companies.length&&<span className="text-caption text-on-surface-variant">Belum ada riwayat perusahaan</span>}</div>
+        {i.restrictions.length>0&&<p className="text-caption text-error">{i.restrictions.map(r=>r.company?`Blacklist ${r.company}`:'Blacklist semua perusahaan').join(' · ')}</p>}
+      </button>)}</div>}
+      {loaded&&!filtered.length&&<div className="rounded-xl border border-dashed border-outline-variant/30 p-xl text-center"><h2 className="font-h3 text-h3">Tidak ada interpreter yang cocok</h2><p className="text-body text-on-surface-variant mt-sm">Coba ubah batas fee, satuan tarif, atau filter perusahaan.</p><Button className="mt-md" variant="ghost" onClick={()=>{setFilters(defaults());setSearch('')}}>Reset pencarian</Button></div>}
+    </div>
+    <Modal open={filterOpen} onClose={()=>setFilterOpen(false)} title="Filter interpreter" maxWidth="max-w-2xl" footer={<div className="w-full flex flex-wrap items-center justify-between gap-xs"><Button variant="ghost" className="!px-sm" onClick={()=>{setDraft(defaults());setFormError('')}}>Reset</Button><div className="flex gap-xs"><Button variant="ghost" className="!px-sm" onClick={()=>setFilterOpen(false)}>Batal</Button><Button form="interpreter-directory-filters" type="submit" className="!px-md">Terapkan filter</Button></div></div>}>
+      <form id="interpreter-directory-filters" onSubmit={apply} className="flex flex-col gap-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-md"><Select label="Perusahaan dalam riwayat tugas" value={draft.company} onChange={update('company')}><option value="">Semua perusahaan</option>{companies.map(c=><option key={c}>{c}</option>)}</Select><Select label="Status penugasan" value={draft.duty} onChange={update('duty')}><option value="">Semua status</option>{['Ada tugas','Tidak ada jadwal','Tidak tersedia','Nonaktif','Blacklist semua perusahaan','Dibatasi perusahaan'].map(c=><option key={c}>{c}</option>)}</Select></div>
+        <fieldset className="rounded-xl bg-surface-container-low border border-outline-variant/15 p-md flex flex-col gap-md"><legend className="px-xs font-h3 text-h3">Anggaran fee</legend><Select label="Satuan tarif" value={draft.unit} onChange={update('unit')}>{Object.entries(units).map(([v,label])=><option key={v} value={v}>{label}</option>)}</Select><div className="flex flex-wrap gap-xs">{[['Di bawah Rp1 juta','','1000000'],['Rp1–1,5 juta','1000000','1500000'],['Semua fee','','']].map(([label,min,max])=><button key={label} type="button" onClick={()=>setDraft(f=>({...f,min,max}))} className={`rounded-full border px-md py-xs text-caption ${draft.min===min&&draft.max===max?'border-primary bg-primary/10 text-primary':'border-outline-variant/25 text-on-surface-variant'}`}>{label}</button>)}</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-md"><TextInput label="Fee minimum (Rp), termasuk" type="number" min="0" step="1" placeholder="Tanpa minimum" value={draft.min} onChange={update('min')}/><TextInput label="Fee maksimum (Rp), di bawah" type="number" min="1" step="1" placeholder="Tanpa maksimum" value={draft.max} onChange={update('max')}/></div><p className="text-caption text-on-surface-variant">Menggunakan tarif IDR yang berlaku pada tanggal request. Tarif khusus perusahaan diprioritaskan. Kandidat tanpa tarif tidak masuk hasil saat batas fee dipasang.</p></fieldset>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-md"><TextInput label="Tanggal request" type="date" required value={draft.date} onChange={update('date')}/><TextInput label="Jam mulai" type="time" required value={draft.start} onChange={update('start')}/><TextInput label="Jam selesai" type="time" required value={draft.end} onChange={update('end')}/></div>
+        <Select label="Urutkan" value={draft.sort} onChange={update('sort')}><option value="name">Nama A–Z</option><option value="fee">Fee terendah</option><option value="company">Perusahaan A–Z</option><option value="project">Proyek A–Z</option><option value="experience">Tugas selesai terkonfirmasi terbanyak</option><option value="rating">Rating tertinggi</option></Select>
+        <p className="text-caption text-on-surface-variant">Tidak ada jadwal belum berarti siap menerima tugas. Konfirmasi kesiapan sebelum booking.</p>
+        {formError&&<p role="alert" className="text-error">{formError}</p>}
+      </form>
+    </Modal>
+    {review&&<WorkbookReview onClose={()=>{setReview(false);setRevision(n=>n+1)}}/>}
+  </>
 }

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {availability,averageRating,feeTotal,restrictionApplies,buildTrackRecord} from '../src/utils/interpreterDatabase.js'
+import {availability,averageRating,feeTotal,restrictionApplies,buildTrackRecord,directoryFee,matchesFee,trackCompanies} from '../src/utils/interpreterDatabase.js'
 const person={id:'p1',status:'aktif'}
 test('fee uses agreed units, explicit overtime and deductions, without calendar placeholders',()=>{
  assert.equal(feeTotal({quantity:2,rate:1200000,overtime_hours:1.5,overtime_rate:100000,extras:250000,deductions:50000}),2750000)
@@ -34,4 +34,23 @@ test('track record omits future and cancelled work and avoids duplicate complete
  assert.equal(result.length,1)
  assert.equal(result[0].title,'Done job')
  assert.equal(result[0].completed,true)
+})
+test('fee budget is exclusive, excludes unknown tariffs, and does not mix units or currency',()=>{
+ const rates=[{unit:'day',currency:'IDR',amount:1000000,valid_from:'2026-11-05',company:''},{unit:'half_day',currency:'IDR',amount:500000,valid_from:'2026-11-05',company:''},{unit:'day',currency:'JPY',amount:100,valid_from:'2026-11-05',company:''}]
+ const full=directoryFee(rates,{unit:'day',date:'2026-11-06'})
+ assert.equal(full.amount,1000000)
+ assert.equal(matchesFee(full,'','1000000'),false)
+ assert.equal(matchesFee(directoryFee(rates,{unit:'half_day',date:'2026-11-06'}),'','1000000'),true)
+ assert.equal(matchesFee(null,'','1000000'),false)
+ assert.equal(directoryFee(rates,{unit:'day',date:'2026-01-01'}),null)
+})
+test('company-specific fee takes precedence over cheaper generic fee and respects expiry',()=>{
+ const rates=[{unit:'day',currency:'IDR',amount:900000,valid_from:'2026-11-05',company:''},{unit:'day',currency:'IDR',amount:1200000,valid_from:'2026-11-05',valid_to:'2026-11-30',company:'TMMIN'}]
+ assert.equal(directoryFee(rates,{unit:'day',date:'2026-11-06',company:'TMMIN'}).amount,1200000)
+ assert.equal(directoryFee(rates,{unit:'day',date:'2026-12-01',company:'TMMIN'}).amount,900000)
+})
+test('company tags come from completed/past tasks, not future bookings or reference-only records',()=>{
+ const events=[{id:'1',title:'Full Day SHP',date:'2026-11-01'},{id:'2',title:'TMMIN KRW#3',date:'2026-11-02'},{id:'3',title:'Full Day OMI',date:'2026-12-01'}]
+ const history=[{id:'4',status:'completed',company:'KAO',project:'QCC',year:2025},{id:'5',status:'reference',company:'KFN'}]
+ assert.deepEqual(trackCompanies(events,history,'2026-11-06'),['KAO','SHP','TMMIN'])
 })

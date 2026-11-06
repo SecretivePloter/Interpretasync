@@ -1,5 +1,10 @@
 # Database interpreter
 
+## Revisi direktori ringkas dan popup filter
+Kartu direktori fokus pada foto/nama, fee IDR per satuan yang dipilih, dan tag perusahaan dari track record (completed experiences dan past calendar; reference-only, future dan cancelled dikecualikan). Perusahaan dapat dikenali dari kolom company atau kode eksplisit pada judul kalender, misalnya TMMIN, SHP dan KAO. Tarif bukan sumber tag pengalaman. Blacklist tetap ditampilkan tanpa statistik panjang atau pesan berulang.
+
+Satu tombol Filter membuka popup berisi perusahaan, status jadwal, satuan tarif, batas fee, tanggal/jam dan pengurutan. Default full day. Batas minimum inklusif, batas maksimum eksklusif, sehingga preset di bawah Rp1 juta mengecualikan tarif Rp1.000.000. Rate IDR efektif pada tanggal request dipakai; tarif khusus perusahaan diprioritaskan ketika company dipilih. Fee terendah dari variasi aktivitas diberi label Mulai. Kandidat tanpa tarif dikecualikan saat budget aktif. Draft filter diterapkan hanya saat Terapkan; Batal tidak mengubah hasil. Tombol aksi tetap di footer popup saat isi digulir.
+
 ## Revisi track record dan tarif, 6 November 2026
 - Tombol per baris "Lengkapi pengalaman & rating" dihapus. Riwayat ditampilkan sebagai timeline berkelompok per bulan, terbaru lebih dahulu. Tugas selesai terkonfirmasi memakai status tersendiri; event yang telah lewat memakai label riwayat kalender. Tugas future dan pengalaman cancelled tidak menjadi tugas selesai.
 - Tarif terbaru pemilik bertanggal 5 November 2026 dimasukkan langsung ke database: 55 variasi (30 full day, 12 half day, 13 bulanan). Tarif tetap mempertahankan angka, aktivitas, pasangan bahasa, dan pengecualian akomodasi. Data tarif aktual tidak disimpan dalam repository publik.
