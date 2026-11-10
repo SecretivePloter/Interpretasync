@@ -1,3 +1,4 @@
+import { useInterpreterCvStore } from './store/useInterpreterCvStore'
 // Root aplikasi: kelola session auth, muat data awal, pasang realtime global.
 import { useEffect, useState } from 'react'
 import Router from './Router'
@@ -32,7 +33,7 @@ export default function App() {
     })
     const unsub = onAuthChange((s) => {
       setSession(s)
-      if (!s) clearRole()
+      if (!s) { clearRole(); useInterpreterCvStore.getState().reset() }
     })
     return unsub
   }, [clearRole])

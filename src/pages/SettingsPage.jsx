@@ -53,7 +53,7 @@ export default function SettingsPage() {
       toast.success('Interpreter dihapus')
       setDelTarget(null)
     } catch (err) {
-      toast.error('Gagal menghapus interpreter')
+      toast.error(err?.message?.includes('versi CV') ? err.message : 'Gagal menghapus interpreter')
       console.error(err)
     } finally {
       setDeleting(false)

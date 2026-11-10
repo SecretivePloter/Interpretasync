@@ -48,5 +48,6 @@ export async function updateInterpreter(id, payload) {
 // Hapus interpreter (cascade ke events & orders via FK).
 export async function deleteInterpreter(id) {
   const { error } = await supabase.from('interpreters').delete().eq('id', id)
+  if (error?.code==='23503' && String(error.message).includes('interpreter_cvs')) throw new Error('Hapus seluruh versi CV interpreter ini terlebih dahulu melalui Update CV, lalu hapus profilnya.')
   if (error) throw error
 }

@@ -1,3 +1,4 @@
+import InterpreterCvActions from '../components/profile/InterpreterCvActions'
 // Halaman detail profil interpreter: panel kiri (identitas) + kanan (statistik & tab).
 import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -119,6 +120,7 @@ export default function ProfilePage() {
           {/* Panel kiri */}
           <div className="w-full lg:w-[360px] shrink-0 flex flex-col gap-lg">
             <ProfileCard interpreter={interpreter} onEdit={() => setEditOpen(true)} />
+            <section className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-md"><h2 className="font-h3 text-h3 mb-sm">CV interpreter</h2><InterpreterCvActions key={id} interpreter={interpreter}/></section>
             <BookingDensity events={myEvents} colorKey={interpreter.color_key} />
           </div>
 
