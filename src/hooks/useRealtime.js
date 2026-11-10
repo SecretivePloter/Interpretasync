@@ -10,7 +10,7 @@ import { useOrderStore } from '../app/store/useOrderStore'
 function bindTable(channel, table, store) {
   channel.on(
     'postgres_changes',
-    { event: '*', schema: 'public', table },
+    { event: '*', schema: 'ichikara', table },
     (payload) => {
       const s = store.getState()
       if (payload.eventType === 'INSERT') s.applyInsert(payload.new)

@@ -26,7 +26,6 @@ export default function PublicDisplayCalendar() {
     const days = getMonthGrid(current)
     const from = toISODate(days[0])
     const to = toISODate(days[41])
-    setLoading(true)
     setError('')
     Promise.all([
       supabase.rpc('public_display_interpreters'),
@@ -44,8 +43,23 @@ export default function PublicDisplayCalendar() {
   }, [queryDate, refreshKey])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setRefreshKey((key) => key + 1), 60_000)
-    return () => window.clearInterval(timer)
+    let debounce
+    const refresh = () => {
+      window.clearTimeout(debounce)
+      debounce = window.setTimeout(() => setRefreshKey((key) => key + 1), 150)
+    }
+    // Sinyal ini hanya berisi revisi; data tetap melalui RPC publik terbatas.
+    const channel = supabase.channel('public-calendar-revision')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'ichikara', table: 'calendar_display_revision' }, refresh)
+      .subscribe((status) => { if (status === 'SUBSCRIBED') refresh() })
+    const timer = window.setInterval(refresh, 60_000)
+    window.addEventListener('online', refresh)
+    return () => {
+      window.clearTimeout(debounce)
+      window.clearInterval(timer)
+      window.removeEventListener('online', refresh)
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   return <main className="h-screen w-screen flex flex-col overflow-hidden bg-background text-on-background">

@@ -28,9 +28,9 @@ export const useEventStore = create((set) => ({
   remove: async (id) => deleteEvent(id),
 
   // Handler realtime.
-  applyInsert: (row) => set((s) => ({ events: [...s.events, row] })),
+  applyInsert: (row) => set((s) => ({ events: [...s.events.filter((e) => e.id !== row.id), row] })),
   applyUpdate: (row) =>
-    set((s) => ({ events: s.events.map((e) => (e.id === row.id ? row : e)) })),
+    set((s) => ({ events: s.events.some((e) => e.id === row.id) ? s.events.map((e) => (e.id === row.id ? row : e)) : [...s.events, row] })),
   applyDelete: (id) =>
     set((s) => ({ events: s.events.filter((e) => e.id !== id) })),
 }))

@@ -127,3 +127,26 @@ input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* Ikon tetap terbaca saat pulse: hanya opacity, tanpa interval JS/layout shift. */
+.unassigned-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #111827;
+  border-radius: 50%;
+  background: #fef3c7;
+  color: #111827;
+  font: 800 10px/1 sans-serif;
+  animation: unassigned-pulse 2s ease-in-out infinite;
+}
+@keyframes unassigned-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .65; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unassigned-indicator { animation: none; }
+}

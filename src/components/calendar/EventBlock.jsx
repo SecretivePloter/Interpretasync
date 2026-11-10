@@ -1,3 +1,5 @@
+import { isUnassignedInterpreter } from '../../utils/unassignedInterpreter'
+import UnassignedIndicator from './UnassignedIndicator'
 // Blok event di grid kalender. Posisi (top/left/width/height) diberikan via `style`.
 // Warna mengikuti interpreter; hover memunculkan tooltip detail.
 import { trimTime, isAllDayEvent } from '../../utils/dateHelpers'
@@ -6,6 +8,7 @@ import Avatar from '../ui/Avatar'
 import { unassignedColor } from '../../utils/calendarColors'
 
 export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60, calendarColor }) {
+  const unassigned = isUnassignedInterpreter(event, interpreter)
   const {bg:hex,foreground}=calendarColor||unassignedColor
   const allDay = isAllDayEvent(event.start_time, event.end_time)
   const time = allDay
@@ -18,7 +21,7 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
 
   return (
     <div
-      className="absolute rounded-lg px-2 py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible"
+      className={`absolute rounded-lg ${unassigned ? 'px-[3px]' : 'px-2'} py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible`}
       style={{
         ...style,
         backgroundColor: hex,
@@ -30,8 +33,8 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         onClick?.(event)
       }}
     >
-      <div className="flex min-w-0 items-center gap-1 font-label-tag text-label-tag font-bold" style={{ color: foreground }}>
-        {interpreter?.name && (
+      <div className="flex min-w-0 items-center gap-[2px] font-label-tag text-label-tag font-bold" style={{ color: foreground }}>
+        <UnassignedIndicator event={event} interpreter={interpreter}/>{!unassigned && interpreter?.name && (
           <Avatar
             name={interpreter.name}
             colorKey={interpreter.color_key}
