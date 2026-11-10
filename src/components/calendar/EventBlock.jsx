@@ -1,3 +1,5 @@
+import RecentChangeIndicator from './RecentChangeIndicator'
+import { isRecentCalendarChange } from '../../utils/calendarChanges'
 import { isUnassignedInterpreter } from '../../utils/unassignedInterpreter'
 import UnassignedIndicator from './UnassignedIndicator'
 // Blok event di grid kalender. Posisi (top/left/width/height) diberikan via `style`.
@@ -7,7 +9,8 @@ import { MapPin, Clock, StickyNote, Building2, Sun } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import { unassignedColor } from '../../utils/calendarColors'
 
-export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60, calendarColor }) {
+export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60, calendarColor, changeNow }) {
+  const recent = isRecentCalendarChange(event, changeNow)
   const unassigned = isUnassignedInterpreter(event, interpreter)
   const {bg:hex,foreground}=calendarColor||unassignedColor
   const allDay = isAllDayEvent(event.start_time, event.end_time)
@@ -21,7 +24,8 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
 
   return (
     <div
-      className={`absolute rounded-lg ${unassigned ? 'px-[3px]' : 'px-2'} py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible`}
+      data-event-id={event.id}
+      className={`absolute rounded-lg ${unassigned || recent ? 'px-[3px]' : 'px-2'} py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible`}
       style={{
         ...style,
         backgroundColor: hex,
@@ -34,7 +38,9 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
       }}
     >
       <div className="flex min-w-0 items-center gap-[2px] font-label-tag text-label-tag font-bold" style={{ color: foreground }}>
-        <UnassignedIndicator event={event} interpreter={interpreter}/>{!unassigned && interpreter?.name && (
+        <UnassignedIndicator event={event} interpreter={interpreter}/>
+        <RecentChangeIndicator event={event} now={changeNow}/>
+        {!unassigned && interpreter?.name && (
           <Avatar
             name={interpreter.name}
             colorKey={interpreter.color_key}
@@ -45,8 +51,8 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         )}
         <span className="truncate min-w-0">{interpreter?.name || '—'}</span>
       </div>
-      <div className="font-caption text-caption line-clamp-1 leading-tight" style={{color:foreground}}>
-        {event.title}
+      <div className="flex min-w-0 items-center gap-[2px] font-caption text-caption leading-tight" style={{color:foreground}}>
+        <span className="min-w-0 truncate">{event.title}</span>
       </div>
       {showTime && (
         <div className="flex items-center gap-[3px] text-[11px] mt-[1px] line-clamp-1" style={{color:foreground}}>

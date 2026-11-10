@@ -1,3 +1,5 @@
+import RecentChangeIndicator from './RecentChangeIndicator'
+import { useCalendarChangeClock } from '../../hooks/useCalendarChangeClock'
 import UnassignedIndicator from './UnassignedIndicator'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { compactMonthLayout } from '../../utils/monthLayout'
@@ -9,6 +11,7 @@ import { useFilterStore } from '../../app/store/useFilterStore'
 import Avatar from '../ui/Avatar'
 
 export default function MonthGrid({currentDate,events,interpretersById,onDayClick,onEventClick,totalEvents=events.length}){
+  const changeNow = useCalendarChangeClock(events)
   const [fullScreen,setFullScreen]=useState(false)
   const [legend,setLegend]=useState(false)
   const [compact,setCompact]=useState(true)
@@ -49,8 +52,8 @@ export default function MonthGrid({currentDate,events,interpretersById,onDayClic
               const p=interpretersById[ev.interpreter_id],color=colors[p?.id]||unassignedColor
               const time=isAllDayEvent(ev.start_time,ev.end_time)?'Seharian':`${trimTime(ev.start_time)}–${trimTime(ev.end_time)}`
               return <button key={ev.id} data-event-id={ev.id} onClick={()=>onEventClick(ev)} className={`text-left w-full min-w-0 rounded border border-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-primary hover:brightness-110 ${compact?'px-[3px] py-0':'px-[6px] py-[4px]'}`} style={{background:color.bg,color:color.foreground,height:compact?layout.chipHeight:undefined}} title={`${iso} · ${p?.name||'Belum ditentukan'} · ${ev.title} · ${time}`}>
-                {compact?<span className="flex items-center gap-[3px] min-w-0 leading-none"><UnassignedIndicator event={ev} interpreter={p}/><Avatar name={p?.name||'?'} avatarUrl={p?.avatar_url} colorKey={p?.color_key} size="xs" className="!w-3 !h-3 shrink-0 !text-[6px]"/><strong className="text-[11px] max-w-[45%] shrink-0 truncate">{p?.name||'Belum ditentukan'}</strong><span className="text-[11px] min-w-0 truncate">{ev.title}</span></span>:<>
-                <span className="flex items-center gap-1 min-w-0"><UnassignedIndicator event={ev} interpreter={p}/><Avatar name={p?.name||'?'} avatarUrl={p?.avatar_url} colorKey={p?.color_key} size="xs" className="!w-4 !h-4 border-white/50 shrink-0"/><span className="text-[12px] font-bold leading-4 break-words">{p?.name||'Belum ditentukan'}</span></span>
+                {compact?<span className="flex items-center gap-[3px] min-w-0 leading-none"><UnassignedIndicator event={ev} interpreter={p}/><RecentChangeIndicator event={ev} now={changeNow}/><Avatar name={p?.name||'?'} avatarUrl={p?.avatar_url} colorKey={p?.color_key} size="xs" className="!w-3 !h-3 shrink-0 !text-[6px]"/><strong className="text-[11px] max-w-[45%] shrink-0 truncate">{p?.name||'Belum ditentukan'}</strong><span className="text-[11px] min-w-0 truncate">{ev.title}</span></span>:<>
+                <span className="flex items-center gap-1 min-w-0"><UnassignedIndicator event={ev} interpreter={p}/><RecentChangeIndicator event={ev} now={changeNow}/><Avatar name={p?.name||'?'} avatarUrl={p?.avatar_url} colorKey={p?.color_key} size="xs" className="!w-4 !h-4 border-white/50 shrink-0"/><span className="text-[12px] font-bold leading-4 break-words">{p?.name||'Belum ditentukan'}</span></span>
                 <span className="block text-[12px] leading-4 break-words mt-[2px]">{ev.title}</span>
                 {!isAllDayEvent(ev.start_time,ev.end_time)&&<span className="block text-[11px] leading-4 mt-[2px] font-medium">{time}</span>}</>}
 

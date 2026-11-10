@@ -1,3 +1,6 @@
+import RecentChangeIndicator from './RecentChangeIndicator'
+import { useCalendarChangeClock } from '../../hooks/useCalendarChangeClock'
+import { calendarChangeTime } from '../../utils/calendarChanges'
 import UnassignedIndicator from './UnassignedIndicator'
 import { useMemo } from 'react'
 import { CalendarDays, Clock3, RotateCcw, UsersRound } from 'lucide-react'
@@ -15,6 +18,7 @@ function getEventTime(event) {
 }
 
 export default function TodayDutyHighlights({ events, interpretersById, compact=false }) {
+  const changeNow = useCalendarChangeClock(events)
   const colors=useMemo(()=>buildCalendarColors(interpretersById),[interpretersById])
   const today = new Date()
   const todayIso = toISODate(today)
@@ -96,6 +100,8 @@ export default function TodayDutyHighlights({ events, interpretersById, compact=
             const color = colors[interpreter?.id]?.bg||unassignedColor.bg
             const visible = interpreter ? isVisible(interpreter.id) : true
             const firstEvent = assignedEvents[0]
+            const latestChangeEvent = assignedEvents.reduce((latest, event) =>
+              (calendarChangeTime(event) ?? 0) > (calendarChangeTime(latest) ?? 0) ? event : latest, firstEvent)
             const detail = `${firstEvent.title || 'Jadwal'} · ${getEventTime(firstEvent)}`
             const title = [interpreter?.name || 'Belum ditentukan', detail]
               .concat(assignedEvents.length > 1 ? [`${assignedEvents.length} jadwal hari ini`] : [])
@@ -120,6 +126,7 @@ export default function TodayDutyHighlights({ events, interpretersById, compact=
                 <span className="min-w-0 flex-1 text-left">
                   <span className="flex min-w-0 items-center gap-xs">
                     <UnassignedIndicator event={firstEvent} interpreter={interpreter}/>
+                    <RecentChangeIndicator event={latestChangeEvent} now={changeNow}/>
                     <span className="truncate font-medium text-body text-on-surface">
                       {interpreter?.name || 'Belum ditentukan'}
                     </span>

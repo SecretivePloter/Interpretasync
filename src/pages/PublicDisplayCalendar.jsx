@@ -29,7 +29,7 @@ export default function PublicDisplayCalendar() {
     setError('')
     Promise.all([
       supabase.rpc('public_display_interpreters'),
-      supabase.rpc('public_display_calendar', { p_from: from, p_to: to }),
+      supabase.rpc('public_display_calendar_v2', { p_from: from, p_to: to }),
     ]).then(([people, schedules]) => {
       if (!live) return
       if (people.error) throw people.error

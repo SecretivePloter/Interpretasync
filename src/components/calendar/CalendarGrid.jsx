@@ -1,7 +1,8 @@
+import { useCalendarChangeClock } from '../../hooks/useCalendarChangeClock'
 // Grid kalender mingguan: gutter waktu + 7 kolom hari.
 // Klik slot kosong -> buat event (pre-fill jam dari posisi klik).
 // Klik event -> edit. Garis merah menandai waktu sekarang.
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CALENDAR_START_HOUR,
   CALENDAR_END_HOUR,
@@ -24,6 +25,18 @@ export default function CalendarGrid({
   onSlotClick,
   onEventClick,
 }) {
+  const scrollRef = useRef(null)
+  const [viewportWidth, setViewportWidth] = useState(Infinity)
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => setViewportWidth(entry.contentRect.width))
+    if (scrollRef.current) observer.observe(scrollRef.current)
+    return () => observer.disconnect()
+  }, [])
+  const changeNow = useCalendarChangeClock(events)
+  const dayLayouts = weekDays.map((day) => buildDayLayout(events, day))
+  // Kartu minimal 38px setelah gutter: avatar + dua status tidak keluar kartu.
+  const maxColumns = Math.max(1, ...dayLayouts.flat().map((event) => event._cols || 1))
+  const gridMinWidth = Math.max(640, 60 + 7 * maxColumns * 42)
   // Daftar jam untuk label & garis (06:00 .. 21:00).
   const hours = useMemo(
     () =>
@@ -45,10 +58,11 @@ export default function CalendarGrid({
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-background">
+    <div ref={scrollRef} className="flex-1 min-w-0 overflow-auto bg-background">
+      {gridMinWidth > viewportWidth && <p className="sticky left-0 border-b border-outline-variant/20 bg-background px-md py-1 text-caption text-on-surface-variant">Geser ke samping untuk melihat seluruh hari.</p>}
       {/* Header hari (sticky). min-w agar kolom punya lebar minimum -> scroll
           horizontal di layar sempit (HP); di desktop ikut penuh. */}
-      <div className="sticky top-0 z-20 flex min-w-[640px] lg:min-w-0 bg-background/95 backdrop-blur-md border-b border-outline-variant/20">
+      <div className="sticky top-0 z-20 flex bg-background/95 backdrop-blur-md border-b border-outline-variant/20" style={{ minWidth: gridMinWidth }}>
         <div className="w-[60px] shrink-0 border-r border-outline-variant/10" />
         <div className="flex-1 grid grid-cols-7">
           {weekDays.map((day, i) => {
@@ -90,7 +104,7 @@ export default function CalendarGrid({
       </div>
 
       {/* Body grid. min-w sama dengan header agar keduanya scroll horizontal seragam. */}
-      <div className="flex min-w-[640px] lg:min-w-0" style={{ height: GRID_HEIGHT }}>
+      <div className="flex" style={{ height: GRID_HEIGHT, minWidth: gridMinWidth }}>
         {/* Gutter waktu */}
         <div className="w-[60px] shrink-0 relative">
           {hours.map((h) => (
@@ -108,7 +122,7 @@ export default function CalendarGrid({
         <div className="flex-1 grid grid-cols-7 relative">
           {weekDays.map((day, dayIdx) => {
             const today = isSameDay(day, now)
-            const dayEvents = buildDayLayout(events, day)
+            const dayEvents = dayLayouts[dayIdx]
             return (
               <div
                 key={dayIdx}
@@ -144,6 +158,7 @@ export default function CalendarGrid({
                     <EventBlock
                       key={ev.id}
                       event={ev}
+                      changeNow={changeNow}
                       interpreter={interpretersById[ev.interpreter_id]}
                       calendarColor={colors[ev.interpreter_id]}
                       compact={cols > 1}
