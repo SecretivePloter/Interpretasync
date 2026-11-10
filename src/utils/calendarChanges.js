@@ -1,6 +1,7 @@
 export const CALENDAR_CHANGE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 const LABELS = {
+  schedule_type: 'tipe jadwal',
   title: 'pekerjaan', date: 'tanggal', start_time: 'jam mulai', end_time: 'jam selesai',
   interpreter_id: 'interpreter', company: 'perusahaan', location: 'lokasi', order_id: 'Job Order',
 }

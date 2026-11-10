@@ -164,3 +164,24 @@ input[type='number']::-webkit-outer-spin-button {
   color: #78350f;
 }
 .calendar-change-indicator svg { fill: #fbbf24; }
+
+:root {
+  --schedule-regular-bg: #e2e8f0;
+  --schedule-regular-fg: #1e293b;
+  --schedule-regular-edge: #64748b;
+}
+.dark {
+  --schedule-regular-bg: #334155;
+  --schedule-regular-fg: #f1f5f9;
+  --schedule-regular-edge: #94a3b8;
+}
+.schedule-regular-label {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 0 2px;
+  font: 700 8px/11px sans-serif;
+  letter-spacing: .2px;
+}

@@ -9,6 +9,8 @@ export const useFilterStore = create(
     (set, get) => ({
       // Daftar interpreter_id yang sedang disembunyikan dari grid.
       hiddenIds: [],
+      showRegular: true,
+      setShowRegular: (showRegular) => set({ showRegular }),
 
       // Toggle tampil/sembunyi satu interpreter.
       toggle: (id) =>

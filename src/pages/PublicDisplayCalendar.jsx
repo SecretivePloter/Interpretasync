@@ -29,7 +29,7 @@ export default function PublicDisplayCalendar() {
     setError('')
     Promise.all([
       supabase.rpc('public_display_interpreters'),
-      supabase.rpc('public_display_calendar_v2', { p_from: from, p_to: to }),
+      supabase.rpc('public_display_calendar_v3', { p_from: from, p_to: to }),
     ]).then(([people, schedules]) => {
       if (!live) return
       if (people.error) throw people.error
@@ -77,6 +77,6 @@ export default function PublicDisplayCalendar() {
     <FilterBar interpreters={interpreters} />
     {loading ? <div className="flex-1 p-xl flex flex-col gap-md">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
       : error ? <div className="grid flex-1 place-items-center text-on-surface-variant">{error}</div>
-        : <MonthGrid currentDate={current} events={shownEvents} interpretersById={interpretersById} onDayClick={() => {}} onEventClick={() => {}} />}
+        : <MonthGrid currentDate={current} events={shownEvents} totalEvents={events.length} interpretersById={interpretersById} onDayClick={() => {}} onEventClick={() => {}} />}
   </main>
 }

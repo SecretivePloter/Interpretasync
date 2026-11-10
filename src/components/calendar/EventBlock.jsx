@@ -1,3 +1,5 @@
+import RegularScheduleLabel from './RegularScheduleLabel'
+import { isRegularSchedule, scheduleColor, scheduleTypeLabel } from '../../utils/scheduleTypes'
 import RecentChangeIndicator from './RecentChangeIndicator'
 import { isRecentCalendarChange } from '../../utils/calendarChanges'
 import { isUnassignedInterpreter } from '../../utils/unassignedInterpreter'
@@ -12,7 +14,8 @@ import { unassignedColor } from '../../utils/calendarColors'
 export default function EventBlock({ event, interpreter, style, onClick, compact, height = 60, calendarColor, changeNow }) {
   const recent = isRecentCalendarChange(event, changeNow)
   const unassigned = isUnassignedInterpreter(event, interpreter)
-  const {bg:hex,foreground}=calendarColor||unassignedColor
+  const regular = isRegularSchedule(event)
+  const {bg:hex,foreground,edge}=scheduleColor(event,calendarColor||unassignedColor)
   const allDay = isAllDayEvent(event.start_time, event.end_time)
   const time = allDay
     ? 'Seharian'
@@ -25,12 +28,14 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
   return (
     <div
       data-event-id={event.id}
-      className={`absolute rounded-lg ${unassigned || recent ? 'px-[3px]' : 'px-2'} py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible`}
+      data-schedule-type={event.schedule_type || 'project'}
+      title={`${scheduleTypeLabel(event)} · ${event.title}`}
+      className={`absolute rounded-lg ${unassigned || recent || regular ? 'px-[3px]' : 'px-2'} py-[3px] z-10 cursor-pointer transition-transform hover:scale-[1.02] hover:z-30 group overflow-visible`}
       style={{
         ...style,
         backgroundColor: hex,
         color: foreground,
-        borderLeft: `3px solid ${hex}`,
+        borderLeft: `3px ${regular ? 'dashed' : 'solid'} ${edge || hex}`,
       }}
       onClick={(e) => {
         e.stopPropagation()
@@ -52,6 +57,7 @@ export default function EventBlock({ event, interpreter, style, onClick, compact
         <span className="truncate min-w-0">{interpreter?.name || '—'}</span>
       </div>
       <div className="flex min-w-0 items-center gap-[2px] font-caption text-caption leading-tight" style={{color:foreground}}>
+        {height >= 36 && <RegularScheduleLabel event={event}/>}
         <span className="min-w-0 truncate">{event.title}</span>
       </div>
       {showTime && (

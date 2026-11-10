@@ -1,6 +1,6 @@
 // Modal tambah/edit jadwal. Validasi field wajib, simpan via store (realtime sync),
 // dan hapus dengan konfirmasi.
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -10,9 +10,13 @@ import { useEventStore } from '../../app/store/useEventStore'
 import { toast } from '../../app/store/useToastStore'
 import { trimTime, isAllDayEvent } from '../../utils/dateHelpers'
 import { ALL_DAY_START, ALL_DAY_END } from '../../utils/constants'
+import { monthEnd, regularScheduleDates, regularScheduleConflicts, scheduleSaveError, scheduleTypeLabel } from '../../utils/scheduleTypes'
 
 const empty = {
   title: '',
+  schedule_type: 'project',
+  end_date: '',
+  weekdays: [1, 2, 3, 4, 5],
   interpreter_id: '',
   date: '',
   start_time: '',
@@ -25,11 +29,14 @@ const empty = {
 }
 
 export default function EventModal({ open, onClose, event, prefill, interpreters, orders }) {
+  const allEvents = useEventStore((s) => s.events)
+  const addRegularSeries = useEventStore((s) => s.addRegularSeries)
   const addEvent = useEventStore((s) => s.add)
   const editEvent = useEventStore((s) => s.edit)
   const removeEvent = useEventStore((s) => s.remove)
 
   const [form, setForm] = useState(empty)
+  const [saveError, setSaveError] = useState('')
   const [saving, setSaving] = useState(false)
   const [confirmDel, setConfirmDel] = useState(false)
   const isEdit = Boolean(event)
@@ -39,6 +46,8 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
     if (!open) return
     if (event) {
       setForm({
+        ...empty,
+        schedule_type: event.schedule_type || 'project',
         title: event.title || '',
         interpreter_id: event.interpreter_id || '',
         date: event.date || '',
@@ -55,6 +64,25 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
       setForm({ ...empty, ...prefill })
     }
   }, [open, event, prefill])
+
+  useEffect(() => { setSaveError('') }, [form])
+  const isNewRegular = !isEdit && form.schedule_type === 'reguler'
+  const recurrence = useMemo(() => {
+    if (!isNewRegular) return { dates: form.date ? [form.date] : [], error: '' }
+    try { return { dates: regularScheduleDates(form.date, form.end_date, form.weekdays), error: '' } }
+    catch (error) { return { dates: [], error: error.message } }
+  }, [isNewRegular, form.date, form.end_date, form.weekdays])
+  const conflicts = useMemo(() => saving ? [] : regularScheduleConflicts(allEvents,
+    recurrence.dates.map(date => ({ ...form, date })), event?.id), [allEvents, recurrence.dates, form, event?.id, saving])
+  const changeType = (e) => {
+    const schedule_type = e.target.value
+    setForm(f => ({ ...f, schedule_type, end_date: f.end_date || monthEnd(f.date) }))
+  }
+  const changeDate = (e) => {
+    const date = e.target.value
+    setForm(f => ({ ...f, date, end_date: !f.end_date || f.end_date === monthEnd(f.date) ? monthEnd(date) : f.end_date }))
+  }
+  const toggleWeekday = (day) => setForm(f => ({ ...f, weekdays: f.weekdays.includes(day) ? f.weekdays.filter(d => d !== day) : [...f.weekdays, day] }))
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
@@ -79,10 +107,15 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
     if (form.end_time <= form.start_time)
       return toast.error('Jam selesai harus setelah jam mulai')
 
+    if (isNewRegular && recurrence.error) return toast.error(recurrence.error)
+    if (conflicts.length) return toast.error('Ada jadwal yang bertabrakan dengan Reguler. Ubah tanggal, jam, atau interpreter.')
+
     setSaving(true)
     try {
       const payload = {
         title: form.title.trim(),
+        schedule_type: form.schedule_type,
+        regular_series_id: form.schedule_type === 'reguler' ? event?.regular_series_id || null : null,
         interpreter_id: form.interpreter_id,
         date: form.date,
         start_time: form.start_time,
@@ -93,11 +126,14 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
         order_id: form.order_id || null,
       }
       if (isEdit) await editEvent(event.id, payload)
+      else if (isNewRegular) await addRegularSeries(payload, recurrence.dates)
       else await addEvent(payload)
-      toast.success('Jadwal tersimpan')
+      toast.success(isNewRegular ? `${recurrence.dates.length} jadwal Reguler tersimpan` : 'Jadwal tersimpan')
       onClose()
     } catch (err) {
-      toast.error('Gagal menyimpan jadwal')
+      const message = scheduleSaveError(err)
+      setSaveError(message)
+      toast.error(message)
       console.error(err)
     } finally {
       setSaving(false)
@@ -141,13 +177,19 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
             <Button variant="ghost" onClick={onClose} disabled={saving}>
               Batal
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Menyimpan…' : 'Simpan'}
+            <Button onClick={handleSave} disabled={saving || conflicts.length > 0 || (isNewRegular && Boolean(recurrence.error))}>
+              {saving ? 'Menyimpan…' : isNewRegular ? `Simpan ${recurrence.dates.length} jadwal` : 'Simpan'}
             </Button>
           </>
         }
       >
         <div className="flex flex-col gap-lg">
+          <Select label="Tipe jadwal" value={form.schedule_type} onChange={changeType}>
+            <option value="project">Project / harian</option>
+            <option value="reguler">Reguler / bulanan</option>
+          </Select>
+          {isEdit && event?.regular_series_id && <p className="text-caption text-on-surface-variant">Perubahan dan penghapusan hanya berlaku untuk tanggal ini.</p>}
+          {saveError && <p role="alert" className="rounded-lg border border-error/30 bg-error/5 p-sm text-caption text-error">{saveError}</p>}
           <TextInput
             label="Judul"
             required
@@ -187,7 +229,7 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
               required
               type="date"
               value={form.date}
-              onChange={update('date')}
+              onChange={changeDate}
             />
             <TextInput
               label="Mulai"
@@ -208,6 +250,21 @@ export default function EventModal({ open, onClose, event, prefill, interpreters
               className={form.all_day ? 'opacity-50' : ''}
             />
           </div>
+          {isNewRegular && <fieldset className="min-w-0 rounded-xl border border-outline-variant/30 bg-surface-container-low p-md">
+            <legend className="px-xs text-caption font-medium">Rangkaian Reguler</legend>
+            <TextInput label="Sampai tanggal" type="date" required min={form.date} value={form.end_date} onChange={update('end_date')} />
+            <p className="mb-xs mt-sm text-caption text-on-surface-variant">Ulangi pada hari</p>
+            <div className="flex flex-wrap gap-sm">{[[1,'Senin'],[2,'Selasa'],[3,'Rabu'],[4,'Kamis'],[5,'Jumat'],[6,'Sabtu'],[0,'Minggu']].map(([day,label]) =>
+              <label key={day} className="inline-flex items-center gap-xs rounded-lg border border-outline-variant/30 px-sm py-xs text-caption">
+                <input type="checkbox" checked={form.weekdays.includes(day)} onChange={() => toggleWeekday(day)} className="h-3.5 w-3.5 accent-[rgb(var(--c-primary))]" />{label}
+              </label>)}</div>
+            <p className="mt-sm text-caption text-on-surface-variant" aria-live="polite">{recurrence.error || `${recurrence.dates.length} jadwal akan dibuat. Tanggal tanpa hari kerja terpilih dilewati.`}</p>
+          </fieldset>}
+          {conflicts.length > 0 && <div role="alert" className="rounded-xl border border-error/30 bg-error/5 p-md text-caption text-error">
+            <p className="font-medium">Ada {conflicts.length} jadwal bertabrakan. Pilih interpreter atau waktu lain.</p>
+            <ul className="mt-xs space-y-1">{conflicts.slice(0,4).map(c => <li key={c.id}>{c.date} · {trimTime(c.start_time)}–{trimTime(c.end_time)} · {scheduleTypeLabel(c)} · {c.title}</li>)}</ul>
+            {conflicts.length > 4 && <p className="mt-xs">Dan {conflicts.length - 4} jadwal lainnya.</p>}
+          </div>}
           <div className="grid grid-cols-2 gap-md">
             <TextInput
               label="Lokasi"

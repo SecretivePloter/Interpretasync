@@ -1,3 +1,4 @@
+import ScheduleTypeToggle from './ScheduleTypeToggle'
 import { useCalendarChangeClock } from '../../hooks/useCalendarChangeClock'
 // Grid kalender mingguan: gutter waktu + 7 kolom hari.
 // Klik slot kosong -> buat event (pre-fill jam dari posisi klik).
@@ -59,7 +60,7 @@ export default function CalendarGrid({
 
   return (
     <div ref={scrollRef} className="flex-1 min-w-0 overflow-auto bg-background">
-      {gridMinWidth > viewportWidth && <p className="sticky left-0 border-b border-outline-variant/20 bg-background px-md py-1 text-caption text-on-surface-variant">Geser ke samping untuk melihat seluruh hari.</p>}
+      <div className="sticky left-0 flex flex-wrap items-center justify-between gap-sm border-b border-outline-variant/20 bg-background px-md py-1 text-caption text-on-surface-variant"><ScheduleTypeToggle/>{gridMinWidth > viewportWidth && <p>Geser ke samping untuk melihat seluruh hari.</p>}</div>
       {/* Header hari (sticky). min-w agar kolom punya lebar minimum -> scroll
           horizontal di layar sempit (HP); di desktop ikut penuh. */}
       <div className="sticky top-0 z-20 flex bg-background/95 backdrop-blur-md border-b border-outline-variant/20" style={{ minWidth: gridMinWidth }}>

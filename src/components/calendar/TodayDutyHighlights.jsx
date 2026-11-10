@@ -1,3 +1,5 @@
+import RegularScheduleLabel from './RegularScheduleLabel'
+import { isRegularSchedule } from '../../utils/scheduleTypes'
 import RecentChangeIndicator from './RecentChangeIndicator'
 import { useCalendarChangeClock } from '../../hooks/useCalendarChangeClock'
 import { calendarChangeTime } from '../../utils/calendarChanges'
@@ -100,6 +102,7 @@ export default function TodayDutyHighlights({ events, interpretersById, compact=
             const color = colors[interpreter?.id]?.bg||unassignedColor.bg
             const visible = interpreter ? isVisible(interpreter.id) : true
             const firstEvent = assignedEvents[0]
+            const regularOnly = assignedEvents.every(isRegularSchedule)
             const latestChangeEvent = assignedEvents.reduce((latest, event) =>
               (calendarChangeTime(event) ?? 0) > (calendarChangeTime(latest) ?? 0) ? event : latest, firstEvent)
             const detail = `${firstEvent.title || 'Jadwal'} · ${getEventTime(firstEvent)}`
@@ -137,7 +140,7 @@ export default function TodayDutyHighlights({ events, interpretersById, compact=
                     )}
                   </span>
                   <span className="mt-[2px] flex min-w-0 items-center gap-1 text-[11px] leading-4 text-on-surface-variant">
-                    <Clock3 size={11} className="shrink-0" aria-hidden="true" />
+                    <RegularScheduleLabel event={firstEvent}/><Clock3 size={11} className="shrink-0" aria-hidden="true" />
                     <span className="truncate">{detail}</span>
                   </span>
                 </span>
@@ -158,7 +161,7 @@ export default function TodayDutyHighlights({ events, interpretersById, compact=
                 title={`${visible ? 'Sembunyikan' : 'Tampilkan'} jadwal ${title}`}
                 aria-pressed={visible}
                 className={cardClass}
-                style={{ borderLeft: `3px solid ${withAlpha(color, visible ? 0.85 : 0.35)}` }}
+                style={{ borderLeft: regularOnly ? '3px dashed var(--schedule-regular-edge)' : `3px solid ${withAlpha(color, visible ? 0.85 : 0.35)}` }}
               >
                 {content}
               </button>

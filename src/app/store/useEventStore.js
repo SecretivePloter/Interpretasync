@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import {
   fetchAllEvents,
   createEvent,
+  createRegularSeries,
   updateEvent,
   deleteEvent,
 } from '../../services/events'
@@ -24,6 +25,7 @@ export const useEventStore = create((set) => ({
   },
 
   add: async (payload) => createEvent(payload),
+  addRegularSeries: async (payload, dates) => createRegularSeries(payload, dates),
   edit: async (id, payload) => updateEvent(id, payload),
   remove: async (id) => deleteEvent(id),
 
