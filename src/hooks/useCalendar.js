@@ -84,6 +84,7 @@ export function useCalendar(initialDate = new Date()) {
 
   return {
     current,
+    setCurrent,
     weekDays,
     goPrev: () => setCurrent((d) => shiftWeek(d, -1)),
     goNext: () => setCurrent((d) => shiftWeek(d, 1)),
